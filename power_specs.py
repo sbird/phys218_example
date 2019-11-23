@@ -7,7 +7,7 @@ Various flux derivative stuff
 
 import numpy as np
 import math
-import smooth
+#import smooth
 import scipy.interpolate
 import sys
 import matplotlib.pyplot as plt
@@ -528,15 +528,18 @@ class power_spec:
 class flux_pow(power_spec):
         figprefix="/flux-figure"
         kbins=np.array([])
-        def __init__(self, Snaps=("snapshot_000", "snapshot_001","snapshot_002","snapshot_003","snapshot_004","snapshot_005","snapshot_006","snapshot_007","snapshot_008","snapshot_009","snapshot_010","snapshot_011"),
-             Zz=np.array([4.2,4.0,3.8,3.6,3.4,3.2,3.0,2.8,2.6,2.4,2.2,2.0]),
+        def __init__(self, Snaps=("snapshot_000", "snapshot_001","snapshot_002","snapshot_003","snapshot_004","snapshot_005","snapshot_006","snapshot_007","snapshot_008","snapshot_009","snapshot_010","snapshot_011"):
+             Zz=np.array([4.2,4.0,3.8,3.6,3.4,3.2,3.0,2.8,2.6,2.4,2.2,2.0])
              sdsskbins=np.array([0.00141,0.00178,0.00224,0.00282,0.00355,0.00447,0.00562,0.00708,0.00891,0.01122,0.01413,0.01778]),
              knotpos=np.array([0.07,0.15,0.475, 0.75, 1.19, 1.89,4,25]), om=0.266, H0=0.71,box=60.0,kmax=4.0,
-             base="/home/spb41/Lyman-alpha/MinParametricRecon/runs/",bf="best-fit/",suf="flux-power/", ext="_flux_power.txt"):
-                power_spec.__init__(self, Snaps,Zz,sdsskbins,knotpos, om, H0,box,base,suf, ext)
-                (k_bf,Pk_bf)= self.loadpk(bf+suf+"snapshot_000"+self.ext,self.bfbox)
-                ind=np.where(k_bf <= kmax)
-                self.kbins=k_bf[ind]
+             self.base="/home/spb41/Lyman-alpha/MinParametricRecon/runs/"
+             self.bf="best-fit/"
+             self.suf="flux-power/"
+             self.ext="_flux_power.txt"
+             power_spec.__init__(self, Snaps,Zz,sdsskbins,knotpos, om, H0,box,base,suf, ext)
+             (k_bf,Pk_bf)= self.loadpk(bf+suf+"snapshot_000"+self.ext,self.bfbox)
+             ind=np.where(k_bf <= kmax)
+             self.kbins=k_bf[ind]
 
         def plot_z(self,Sims,redshift,title="Relative Flux Power",ylabel=r"$\mathrm{P}_\mathrm{F}(k,p)\,/\,\mathrm{P}_\mathrm{F}(k,p_0)$", legend=True):
                 power_spec.plot_z(self,Sims,redshift,title,ylabel,legend)
