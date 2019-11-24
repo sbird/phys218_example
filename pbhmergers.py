@@ -42,7 +42,7 @@ class NFWHalo(hm.HaloMassFunction):
 
     def get_nu(self,mass):
         """Get nu, delta_c/sigma"""
-        return 1.686/self.overden.sigmaof_M_z(mass.to(self.ureg.Msolarh).magnitude)
+        return 1.686/self.overden.sigmaof_M_z((mass*self.ureg.Msolarh).magnitude)
 
     def concentration(self,mass):
         """Compute the concentration for a halo mass in Msun"""
@@ -61,7 +61,7 @@ class NFWHalo(hm.HaloMassFunction):
         hubz2 = (self.overden.omega_matter0/aa**3 + self.overden.omega_lambda0) * hubble**2
         #Critical density at redshift in units of kg m^-3
         rhocrit = 3 * hubz2 / (8*math.pi* self.ureg.newtonian_constant_of_gravitation)
-        print "rhocrit = ", rhocrit
+        print("rhocrit = ", rhocrit)
         return rhocrit.to_base_units()
 
     def R200(self, mass):
@@ -221,7 +221,7 @@ class NFWHalo(hm.HaloMassFunction):
             threefac = self.threebodyratio(mass)
             threefac = np.max([threefac, np.ones_like(threefac)],axis=0)
             rate *= threefac
-        return 0.5*(mass/bhmass)/rat
+        return 0.5*(mass/bhmass)/rate
 
     def bias(self,mass):
         """The formula for halo bias in EPS theory (Mo & White 1996), eq. 13"""
@@ -253,13 +253,13 @@ class EinastoHalo(NFWHalo):
         prefac = 4 * math.pi * np.exp(2/alpha)/ alpha *(alpha/2)**(3/alpha)
         return mass / gamma / prefac / (R200 / conc)**3
 
-    def profile(self, rr, mass):
+    def profile(self, radius, mass):
         R200 = self.R200(mass)
         conc = self.concentration(mass)
         Rs = R200/conc
         alpha = 0.18
         rho0 = self.rho0(mass)
-        rho = rho0 * np.exp(-2 / alpha * ((rr/Rs)**alpha -1))
+        rho = rho0 * np.exp(-2 / alpha * ((radius/Rs)**alpha -1))
         return rho
 
 def plot_pbh_halo(redshift):
