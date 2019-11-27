@@ -42,11 +42,15 @@ class NFWHalo(hm.HaloMassFunction):
 
     def get_nu(self,mass):
         """Get nu, delta_c/sigma"""
+        if self.ureg.get_dimensionality(mass) == self.ureg.get_dimensionality(0):
+            mass = mass*ureg.Msolarh
         return 1.686/self.overden.sigmaof_M_z(mass.to(self.ureg.Msolarh).magnitude)
 
     def concentration(self,mass):
         """Compute the concentration for a halo mass in Msun"""
-#         assert self.ureg.get_dimensionality('[mass]') == self.ureg.get_dimensionality(mass)
+        #if self.ureg.get_dimensionality('[mass]') != self.ureg.get_dimensionality(mass):
+        if self.ureg.get_dimensionality(mass) == self.ureg.get_dimensionality(0):
+            mass = mass*self.ureg.Msolarh
         nu = self.get_nu(mass)
         zz = self.overden.redshift
         return self.conc_model.concentration(nu, zz)
@@ -61,7 +65,7 @@ class NFWHalo(hm.HaloMassFunction):
         hubz2 = (self.overden.omega_matter0/aa**3 + self.overden.omega_lambda0) * hubble**2
         #Critical density at redshift in units of kg m^-3
         rhocrit = 3 * hubz2 / (8*math.pi* self.ureg.newtonian_constant_of_gravitation)
-        print "rhocrit = ", rhocrit
+        #print("rhocrit = ", rhocrit)
         return rhocrit.to_base_units()
 
     def R200(self, mass):
@@ -221,7 +225,7 @@ class NFWHalo(hm.HaloMassFunction):
             threefac = self.threebodyratio(mass)
             threefac = np.max([threefac, np.ones_like(threefac)],axis=0)
             rate *= threefac
-        return 0.5*(mass/bhmass)/rat
+        return 0.5*(mass/bhmass)/rate #11/22/19 rat to rate
 
     def bias(self,mass):
         """The formula for halo bias in EPS theory (Mo & White 1996), eq. 13"""
@@ -307,7 +311,7 @@ def plot_pbh_per_mass(redshift):
 
 def plot_concentration_vs_mass(redshift):
     """Plot the concentration as a function of halo mass"""
-    mass = np.logspace(2,16)
+    mass = np.logspace(2,16) 
     hh = NFWHalo(redshift)
     plt.loglog(mass, hh.concentration(mass), ls='-', label="Ludlow concentration")
     hh.conc_model = concentration.PradaConcentration(hh.overden.omega_matter0)
