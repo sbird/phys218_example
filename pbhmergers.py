@@ -42,7 +42,13 @@ class NFWHalo(hm.HaloMassFunction):
 
     def get_nu(self,mass):
         """Get nu, delta_c/sigma"""
+<<<<<<< HEAD
+        if self.ureg.get_dimensionality('') == self.ureg.get_dimensionality(mass):
+            mass = mass * self.ureg.Msolarh
+        return 1.686/self.overden.sigmaof_M_z(mass.to(self.ureg.Msolar).magnitude)
+=======
         return 1.686/self.overden.sigmaof_M_z(mass.to(self.ureg.Msolarh).magnitude)
+>>>>>>> ffbf76b0bf2272fa9e731d6058572be8cad835a6
 
     def concentration(self,mass):
         """Compute the concentration for a halo mass in Msun"""
@@ -61,7 +67,11 @@ class NFWHalo(hm.HaloMassFunction):
         hubz2 = (self.overden.omega_matter0/aa**3 + self.overden.omega_lambda0) * hubble**2
         #Critical density at redshift in units of kg m^-3
         rhocrit = 3 * hubz2 / (8*math.pi* self.ureg.newtonian_constant_of_gravitation)
+<<<<<<< HEAD
+        #print ("rhocrit = ", rhocrit)
+=======
         print "rhocrit = ", rhocrit
+>>>>>>> ffbf76b0bf2272fa9e731d6058572be8cad835a6
         return rhocrit.to_base_units()
 
     def R200(self, mass):
@@ -221,7 +231,11 @@ class NFWHalo(hm.HaloMassFunction):
             threefac = self.threebodyratio(mass)
             threefac = np.max([threefac, np.ones_like(threefac)],axis=0)
             rate *= threefac
+<<<<<<< HEAD
+        return 0.5*(mass/bhmass)/rate
+=======
         return 0.5*(mass/bhmass)/rat
+>>>>>>> ffbf76b0bf2272fa9e731d6058572be8cad835a6
 
     def bias(self,mass):
         """The formula for halo bias in EPS theory (Mo & White 1996), eq. 13"""
@@ -316,7 +330,11 @@ def plot_concentration_vs_mass(redshift):
     plt.xticks(np.logspace(3,15,5))
     plt.xlabel(r"$M_\mathrm{vir}$ ($M_\odot/h$)")
     plt.ylabel(r"Concentration")
+<<<<<<< HEAD
+    plt.ylim(1, 1e2)
+=======
     plt.ylim(1e-8, 1)
+>>>>>>> ffbf76b0bf2272fa9e731d6058572be8cad835a6
     plt.legend(loc=0)
     plt.savefig("concentration.pdf")
     plt.clf()
@@ -399,4 +417,8 @@ if __name__ == "__main__":
     plot_concentration_vs_mass(0)
     plot_pbh_halo(0)
     plot_pbh_per_mass(0)
+<<<<<<< HEAD
+    #print_numbers()
+=======
     print_numbers()
+>>>>>>> ffbf76b0bf2272fa9e731d6058572be8cad835a6
