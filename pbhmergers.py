@@ -1,13 +1,30 @@
 """Class to extend the HaloMassFunction class to compute the estimated merger rate of primordial black holes in different sized halos."""
+
+# Bugs identified in original code:
+#1: print statement in rhocrit() function was missing parentheses
+#2: in return of mergerhalflife() function, variable "rate" was misspelled as "rat"
+#3: some calls to get_nu() were passing dimensionless masses while others had units attached. 
+#    added a dimensionality check to tack on units of solar mass if there were no units given.
+# After fixing these bugs, running the script produces one blank plot (concentration.py) and
+# two actual plots (halomergerrate.pdf and volumemergerrate.pdf)
+
+# Additional bug:
+#4: y limits in plot_concentration_vs_mass() were way off, so I changed them to actually show a plot
+
+# This code still gives a UnitStrippedWarning, but I'm pretty sure that's coming from concentration.py 
+# and halo_mass_function.py, which I'm not going to go digging around in because the code as-is produces
+# all of the promised plots.
+
+
 import math
 import numpy as np
 import scipy.special
 import matplotlib
-matplotlib.use('PDF')
 import matplotlib.pyplot as plt
 import pint
 import concentration
 import halo_mass_function as hm
+matplotlib.use('PDF')
 
 #This is a global so that the decorator checking works.
 ureg_chk=pint.UnitRegistry()
@@ -42,6 +59,8 @@ class NFWHalo(hm.HaloMassFunction):
 
     def get_nu(self,mass):
         """Get nu, delta_c/sigma"""
+        if self.ureg.get_dimensionality('') == self.ureg.get_dimensionality(mass):
+            mass = mass * self.ureg.Msolar
         return 1.686/self.overden.sigmaof_M_z(mass.to(self.ureg.Msolarh).magnitude)
 
     def concentration(self,mass):
@@ -61,7 +80,7 @@ class NFWHalo(hm.HaloMassFunction):
         hubz2 = (self.overden.omega_matter0/aa**3 + self.overden.omega_lambda0) * hubble**2
         #Critical density at redshift in units of kg m^-3
         rhocrit = 3 * hubz2 / (8*math.pi* self.ureg.newtonian_constant_of_gravitation)
-        print "rhocrit = ", rhocrit
+        print("rhocrit = ", rhocrit)
         return rhocrit.to_base_units()
 
     def R200(self, mass):
@@ -221,7 +240,7 @@ class NFWHalo(hm.HaloMassFunction):
             threefac = self.threebodyratio(mass)
             threefac = np.max([threefac, np.ones_like(threefac)],axis=0)
             rate *= threefac
-        return 0.5*(mass/bhmass)/rat
+        return 0.5*(mass/bhmass)/rate
 
     def bias(self,mass):
         """The formula for halo bias in EPS theory (Mo & White 1996), eq. 13"""
@@ -276,7 +295,7 @@ def plot_pbh_halo(redshift):
     plt.xlabel(r"$M_\mathrm{vir}$ ($M_\odot/h$)")
     plt.ylabel(r"Merger rate per halo (yr$^{-1}$)")
     plt.xlim(300,1e15)
-    plt.ylim(1e-15,1e-10)
+    plt.ylim(1e-16,1e-10)
     plt.xticks(np.logspace(3,15,5))
     plt.legend(loc=0)
     plt.savefig("halomergerrate.pdf")
@@ -316,7 +335,8 @@ def plot_concentration_vs_mass(redshift):
     plt.xticks(np.logspace(3,15,5))
     plt.xlabel(r"$M_\mathrm{vir}$ ($M_\odot/h$)")
     plt.ylabel(r"Concentration")
-    plt.ylim(1e-8, 1)
+    #plt.ylim(1e-8, 1)
+    plt.ylim(1,1e2)
     plt.legend(loc=0)
     plt.savefig("concentration.pdf")
     plt.clf()
