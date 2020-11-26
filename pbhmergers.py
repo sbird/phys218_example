@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 """Class to extend the HaloMassFunction class to compute the estimated merger rate of primordial black holes in different sized halos."""
 import math
 import numpy as np
@@ -61,7 +62,8 @@ class NFWHalo(hm.HaloMassFunction):
         hubz2 = (self.overden.omega_matter0/aa**3 + self.overden.omega_lambda0) * hubble**2
         #Critical density at redshift in units of kg m^-3
         rhocrit = 3 * hubz2 / (8*math.pi* self.ureg.newtonian_constant_of_gravitation)
-        print "rhocrit = ", rhocrit
+        #print "rhocrit = ", rhocrit
+        print ("rhocrit = ", rhocrit)
         return rhocrit.to_base_units()
 
     def R200(self, mass):
@@ -105,7 +107,9 @@ class NFWHalo(hm.HaloMassFunction):
 #         assert self.ureg.get_dimensionality('') == self.ureg.get_dimensionality(sigma)
         #Now we have a mathematica integral in terms of gamma functions.
         #P[v_, sigma_, vvir_] := Exp[-v^2/sigma^2] - Exp[-vvir^2/sigma^2]
-        #FunctionExpand[Integrate[v^(3/7)*P[v, sigma, Vvir], {v, 0, Vvir}]]
+        #FunctionExpand[Integ
+        #[v^(3/7)*P[v, sigma, Vvir], {v, 0, Vvir}]]
+        [v^(3/7)*P[v, sigma, Vvir], {v, 0, Vvir}]
         #Piece from the constant exponential cutoff
         cutoff = -(7/10)*np.exp(-(vvir**2/sigma**2)) * vvir**(10/7)
         #Piece from the gamma integral: note that mathematica's incomplete gamma function
@@ -221,7 +225,8 @@ class NFWHalo(hm.HaloMassFunction):
             threefac = self.threebodyratio(mass)
             threefac = np.max([threefac, np.ones_like(threefac)],axis=0)
             rate *= threefac
-        return 0.5*(mass/bhmass)/rat
+        #return 0.5*(mass/bhmass)/rat
+        return 0.5*(mass/bhmass)/rate
 
     def bias(self,mass):
         """The formula for halo bias in EPS theory (Mo & White 1996), eq. 13"""
