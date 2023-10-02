@@ -436,6 +436,17 @@ class power_spec:
                 else:
                         guess=derivs.GetPF(params, redshift)+1.0
                 return np.array((test2/guess))[0][0]
+                
+        """Load a Pk. Different function due to needing to be different for each class"""
+        def loadpk(self, path,box):
+                #Adjust Fourier convention.
+                flux_power=np.loadtxt(self.base+path)
+                scale=self.H0/box
+                k=(flux_power[1:,0]-0.5)*scale*2.0*math.pi
+                PF=flux_power[1:,1]/scale
+                return (k, PF)
+
+
 
 """ A class written to store the various methods related to calculating of the flux derivatives and plotting of the flux power spectra"""
 class flux_pow(power_spec):
