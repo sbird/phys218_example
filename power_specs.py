@@ -425,7 +425,7 @@ class power_spec:
                 #Need to load and rebin the sim.
                 (k, test)=self.loadpk(Sim+self.suf+self.GetSnap(redshift)+self.ext, box)
                 (k,bf)=self.loadpk(bstft+self.suf+self.GetSnap(redshift)+self.ext,box)
-                kbins=self.Getkbins()
+                kbins=self.GetSDSSkbins(redshift)
                 ind = np.where(kbins >= 1.0*2.0*math.pi*self.H0/box)
                 test2=np.ones(np.size(kbins))
                 test2[ind]=rebin(test/bf,k,kbins[ind])#
