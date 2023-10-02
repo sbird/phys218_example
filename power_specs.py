@@ -661,7 +661,7 @@ class flux_pdf(power_spec):
                 (k,PF_b)=self.loadpk(dir+self.suf+"snapshot_006"+self.ext, self.box)
                 PF3=(z-2.8)*5*(PF_b-PF_a)+PF_a
                 PDF = np.array([PF1,PF2,PF3])
-                np.savetxt(sys.stdout,PDF.T("%1.8f","%1.8f","%1.8f"))
+                np.savetxt(sys.stdout,PDF.T)
                 return (PF1, PF2, PF3)
 
 if __name__=='__main__':
