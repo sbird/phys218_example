@@ -425,7 +425,7 @@ class power_spec:
                 #Need to load and rebin the sim.
                 (k, test)=self.loadpk(Sim+self.suf+self.GetSnap(redshift)+self.ext, box)
                 (k,bf)=self.loadpk(bstft+self.suf+self.GetSnap(redshift)+self.ext,box)
-                kbins=self.Getkbins()
+                kbins=self.GetSDSSkbins(redshift)
                 ind = np.where(kbins >= 1.0*2.0*math.pi*self.H0/box)
                 test2=np.ones(np.size(kbins))
                 test2[ind]=rebin(test/bf,k,kbins[ind])#
@@ -445,7 +445,6 @@ class power_spec:
                 k=(flux_power[1:,0]-0.5)*scale*2.0*math.pi
                 PF=flux_power[1:,1]/scale
                 return (k, PF)
-
 
 
 """ A class written to store the various methods related to calculating of the flux derivatives and plotting of the flux power spectra"""
