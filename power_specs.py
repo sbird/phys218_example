@@ -666,16 +666,16 @@ class flux_pdf(power_spec):
                 np.savetxt(sys.stdout,PDF.T)
                 return (PF1, PF2, PF3)
 
-if __name__=='__main__':
-        flux=flux_pow()
-        matter=matter_pow()
-        fpdf=flux_pdf()
-        A_knot=knot(("A0.54/","A0.74/","A0.84/","A1.04/", "A1.14/","A1.34/"), (0.54,0.74,0.84,1.04,1.14,1.34),0.94,"best-fit/", 60)
-        AA_knot=knot(("AA0.54/","AA0.74/","AA1.14/","AA1.34/"), (0.54,0.74,1.14,1.34),0.94,"boxcorr400/", 120)
-        B_knot=knot(("B0.33/","B0.53/","B0.73/", "B0.83/", "B1.03/","B1.13/", "B1.33/"), (0.33,0.53,0.73,0.83,1.03, 1.13,1.33),0.93,"best-fit/", 60)
-        C_knot=knot(("C0.11/", "C0.31/","C0.51/","C0.71/","C1.11/","C1.31/","C1.51/"),(0.11, 0.31,0.51,0.71, 1.11,1.31,1.51),0.91,"bf2/", 60)
-        D_knot=knot(("D0.50/","D0.70/","D1.10/","D1.20/", "D1.30/", "D1.50/", "D1.70/"),(0.50, 0.70,1.10,1.20,1.30, 1.50, 1.70),0.90,"bfD/", 48)
-        interp=flux_interp(flux, (AA_knot, B_knot, C_knot, D_knot))
+# if __name__=='__main__':
+#         flux=flux_pow()
+#         matter=matter_pow()
+#         fpdf=flux_pdf()
+#         A_knot=knot(("A0.54/","A0.74/","A0.84/","A1.04/", "A1.14/","A1.34/"), (0.54,0.74,0.84,1.04,1.14,1.34),0.94,"best-fit/", 60)
+#         AA_knot=knot(("AA0.54/","AA0.74/","AA1.14/","AA1.34/"), (0.54,0.74,1.14,1.34),0.94,"boxcorr400/", 120)
+#         B_knot=knot(("B0.33/","B0.53/","B0.73/", "B0.83/", "B1.03/","B1.13/", "B1.33/"), (0.33,0.53,0.73,0.83,1.03, 1.13,1.33),0.93,"best-fit/", 60)
+#         C_knot=knot(("C0.11/", "C0.31/","C0.51/","C0.71/","C1.11/","C1.31/","C1.51/"),(0.11, 0.31,0.51,0.71, 1.11,1.31,1.51),0.91,"bf2/", 60)
+#         D_knot=knot(("D0.50/","D0.70/","D1.10/","D1.20/", "D1.30/", "D1.50/", "D1.70/"),(0.50, 0.70,1.10,1.20,1.30, 1.50, 1.70),0.90,"bfD/", 48)
+#         interp=flux_interp(flux, (AA_knot, B_knot, C_knot, D_knot))
 #Thermal parameters for models
 
 #Models where gamma is varied
@@ -702,6 +702,6 @@ if __name__=='__main__':
         bf2ag=np.array([1.0184905 ,1.0332849 ,1.0404092 ,1.0538235 ,1.0598905 ,1.0695964 ,1.0771414 ,1.0827464 ,1.0904784 ,1.0964669 ,1.1009428,1.1068357])
         bf2at=np.array([26914.856, 27497.555, 28407.030, 28357.785, 28919.376, 28610.038, 28478.749, 28484.856, 27841.160, 27335.328, 26933.453,26099.643])/1e3
 
-        G_knot=knot(("bf2z/","bf2b/","bf2c/","bf2d/", "bf2T15/","bf2T35/","bf2T45/","bf2a/"),(bf2zg,bf2bg,bf2cg,bf2dg,T15g,T35g,T45g,bf2ag),bf2g,"bf2/",60, (bf2zt,bf2bt,bf2ct,bf2dt,T15t,T35t,T45t,bf2at),bf2t)
-        g_int=flux_interp(flux,(G_knot))
+        # G_knot=knot(("bf2z/","bf2b/","bf2c/","bf2d/", "bf2T15/","bf2T35/","bf2T45/","bf2a/"),(bf2zg,bf2bg,bf2cg,bf2dg,T15g,T35g,T45g,bf2ag),bf2g,"bf2/",60, (bf2zt,bf2bt,bf2ct,bf2dt,T15t,T35t,T45t,bf2at),bf2t)
+        # g_int=flux_interp(flux,(G_knot))
 
