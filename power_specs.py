@@ -8,7 +8,7 @@ Various flux derivative stuff
 import numpy as np
 import math
 import scipy.interpolate
-import sys
+# import sys
 import matplotlib.pyplot as plt
 import matplotlib.backends
 import re
@@ -594,12 +594,12 @@ class power_spec:
             save_figure(out)
         return plt.gcf()
 
-    def GetFlat(self, dir, si=0.0):
+    def GetFlat(self, direc, si=0.0):
         """
         Get a power spectrum in the flat format we use for inputting some cosmomc tables.
 
         Args:
-            dir (str): The directory for the power spectrum data.
+            direc (str): The directory for the power spectrum data.
             si (float, optional): Si parameter. Defaults to 0.0.
 
         Returns:
@@ -610,7 +610,7 @@ class power_spec:
         # SiIII corr now done on the fly in lya_sdss_viel.f90
         for i in np.arange(0, np.size(self.Snaps) - 1):
             scale = self.Hubble(self.Zz[i]) / (1.0 + self.Zz[i])
-            (k, Pk) = self.loadpk(dir + self.Snaps[i] + self.ext, self.box)
+            (k, Pk) = self.loadpk(direc + self.Snaps[i] + self.ext, self.box)
             Fbar = math.exp(-0.0023 * (1 + self.Zz[i]) ** 3.65)
             a = si / (1 - Fbar)
             # The SiIII correction is kind of oscillatory, so we want
@@ -735,7 +735,7 @@ class power_spec:
             mat = np.vstack([pdif**2, pdif, qdif**2, qdif]).T
         else:
             mat = np.vstack([pdif**2, pdif]).T
-        (derivs, residues, rank, sing) = np.linalg.lstsq(mat, PFdif)
+        derivs = np.linalg.lstsq(mat, PFdif)[0]
         return derivs
 
     def Getkbins(self):
@@ -852,13 +852,13 @@ class flux_pow(power_spec):
         power_spec.__init__(
             self, Snaps, Zz, sdsskbins, knotpos, om, H0, box, base, suf, ext
         )
-        (k_bf, Pk_bf) = self.loadpk(bf + suf + "snapshot_000" + self.ext, self.bfbox)
+        k_bf = self.loadpk(bf + suf + "snapshot_000" + self.ext, self.bfbox)[0]
         ind = np.where(k_bf <= kmax)
         self.kbins = k_bf[ind]
 
     def plot_z(
         self,
-        Sims,
+        Knot,
         redshift,
         title="Relative Flux Power",
         ylabel=r"$\mathrm{P}_\mathrm{F}(k,p)\,/\,\mathrm{P}_\mathrm{F}(k,p_0)$",
@@ -867,13 +867,13 @@ class flux_pow(power_spec):
         Plot flux power spectra for a given redshift.
 
         Args:
-            Sims (tuple or list): Simulation data.
+            Knot (tuple or list): Simulation data.
             redshift (float): Redshift value.
             title (str, optional): Plot title. Defaults to "Relative Flux Power".
             ylabel (str, optional): Y-axis label. Defaults to r"$mathrm{P}_mathrm{F}(k,p)/mathrm{P}_mathrm{F}(k,p_0)$".
             legend (bool, optional): Show legend. Defaults to True.
         """
-        power_spec.plot_z(self, Sims, redshift, title, ylabel, legend)
+        power_spec.plot_z(self, Knot, redshift, title, ylabel, legend)
         if legend:
             kbins = self.GetSDSSkbins(redshift)
             plt.axvspan(kbins[0], kbins[-1], color="#B0B0B0")
@@ -1004,10 +1004,11 @@ class matter_pow(power_spec):
 
     def plot_z(
         self,
-        Sims,
+        Knot,
         redshift,
         title="Relative Matter Power",
         ylabel=r"$\mathrm{P}(k,p)\,/\,\mathrm{P}(k,p_0)$",
+        legend = True
     ):
         """
         Plot matter power spectra for a given redshift.
@@ -1018,7 +1019,7 @@ class matter_pow(power_spec):
             title (str, optional): Plot title. Defaults to "Relative Matter Power".
             ylabel (str, optional): Y-axis label. Defaults to r"$mathrm{P}(k,p)/mathrm{P}(k,p_0)$".
         """
-        power_spec.plot_z(self, Sims, redshift, title, ylabel)
+        power_spec.plot_z(self, Knot, redshift, title, ylabel, legend)
 
     def loadpk(self, path, box):
         """
@@ -1043,7 +1044,7 @@ class matter_pow(power_spec):
         Pk = (Pkbar * self.ob + PkDM * (self.om - self.ob)) / self.om
         return (simk, Pk)
 
-    def plot_power(self, path, redshift, camb_filename=""):
+    def plot_power(self, path, redshift, colour=""):
         """
         Plot absolute matter power spectrum, not relative.
 
@@ -1074,8 +1075,8 @@ class matter_pow(power_spec):
             linestyle="-.",
             color="black",
         )
-        if camb_filename != "":
-            camb = np.loadtxt(camb_filename)
+        if colour != "":
+            camb = np.loadtxt(colour)
             # Adjust Fourier convention.
             k = camb[:, 0] * self.H0
             # NOW THERE IS NO h in the T anywhere.
@@ -1102,7 +1103,6 @@ class flux_pdf(power_spec):
         sdsskbins=np.arange(0, 20),
         knotpos=np.array([]),
         om=0.266,
-        ob=0.0449,
         H0=0.71,
         box=48.0,
         base="/home/spb41/Lyman-alpha/MinParametricRecon/runs/",
@@ -1158,7 +1158,7 @@ class flux_pdf(power_spec):
             array: Line object for the plot.
         """
         (onek, oneP) = self.loadpk(one, onebox)
-        (twok, twoP) = self.loadpk(two, twobox)
+        twoP = self.loadpk(two, twobox)[1]
         relP = oneP / twoP
         plt.title("Relative flux PDF " + one + " and " + two)
         plt.ylabel(r"$F_2(k)/F_1(k)$")
@@ -1166,7 +1166,7 @@ class flux_pdf(power_spec):
         line = plt.semilogy(onek, relP, color=colour)
         return line
 
-    def plot_power(self, path, redshift):
+    def plot_power(self, path, redshift, colour="black"):
         """
         Plot the absolute flux power spectrum, not relative.
 
@@ -1186,7 +1186,7 @@ class flux_pdf(power_spec):
         plt.title("PDF at z=" + str(redshift))
         return (k, Pdf)
 
-    def calc_z(self, redshift, s_knot):
+    def calc_z(self, redshift, s_knot, kbins):
         """
         Calculate the flux derivatives for a single redshift.
 
@@ -1227,7 +1227,7 @@ class flux_pdf(power_spec):
         PowerFluxes = 5 * ((redshift - lred) * uPower + (ured - redshift) * lPower)
         PFp0 = 5 * ((redshift - lred) * uPFp0 + (ured - redshift) * lPFp0)
         for k in np.arange(0, nk):
-            (dPF, d2PF, chi2) = self.flux_deriv(PowerFluxes[:, k] / PFp0[k], pdifs)
+            dPF, d2PF = self.flux_deriv(PowerFluxes[:, k] / PFp0[k], pdifs)[:2]
             results[k] = d2PF
             results[nk + k] = dPF
         return results
@@ -1241,7 +1241,7 @@ class flux_pdf(power_spec):
         """
         return np.arange(0, 20, 1) + 0.5
 
-    def plot_z(self, Knot, redshift, title="", ylabel=""):
+    def plot_z(self, Knot, redshift, title="", ylabel="", legend = True):
         """
         Plot comparisons between a bunch of simulations on one graph.
 
@@ -1268,9 +1268,9 @@ class flux_pdf(power_spec):
         line = np.array([])
         legname = np.array([])
         for sim in Knot.names:
-            (k, Pk) = self.loadpk(
+            Pk = self.loadpk(
                 sim + self.suf + self.pre + self.GetSnap(redshift) + self.ext, self.box
-            )
+            )[1]
             line = np.append(
                 line, plt.semilogy(simk, Pk / BFPk, linestyle="-", linewidth=1.5)
             )
@@ -1278,30 +1278,30 @@ class flux_pdf(power_spec):
         plt.legend(line, legname)
         return
 
-    def GetFlat(self, dir):
+    def GetFlat(self, direc, si=0.0):
         """
         Get a power spectrum in the flat format used for inputting some cosmomc tables.
 
         Args:
-            dir (str): Directory path.
+            direc (str): Directory path.
 
         Returns:
             tuple: Flux power spectra data.
         """
-        Pk_sdss = np.empty([11, 12])
+        # Pk_sdss = np.empty([11, 12])
         z = 2.07
-        (k, PF_a) = self.loadpk(dir + self.suf + "snapshot_011" + self.ext, self.box)
-        (k, PF_b) = self.loadpk(dir + self.suf + "snapshot_010" + self.ext, self.box)
+        PF_a = self.loadpk(direc + self.suf + "snapshot_011" + self.ext, self.box)[1]
+        PF_b = self.loadpk(direc + self.suf + "snapshot_010" + self.ext, self.box)[1]
         PF1 = (z - 2.0) * 5 * (PF_b - PF_a) + PF_a
         z = 2.52
-        (k, PF_a) = self.loadpk(dir + self.suf + "snapshot_009" + self.ext, self.box)
-        (k, PF_b) = self.loadpk(dir + self.suf + "snapshot_008" + self.ext, self.box)
+        PF_a = self.loadpk(direc + self.suf + "snapshot_009" + self.ext, self.box)[1]
+        PF_b = self.loadpk(direc + self.suf + "snapshot_008" + self.ext, self.box)[1]
         PF2 = (z - 2.4) * 5 * (PF_b - PF_a) + PF_a
         z = 2.94
-        (k, PF_a) = self.loadpk(dir + self.suf + "snapshot_007" + self.ext, self.box)
-        (k, PF_b) = self.loadpk(dir + self.suf + "snapshot_006" + self.ext, self.box)
+        PF_a = self.loadpk(direc + self.suf + "snapshot_007" + self.ext, self.box)[1]
+        PF_b = self.loadpk(direc + self.suf + "snapshot_006" + self.ext, self.box)[1]
         PF3 = (z - 2.8) * 5 * (PF_b - PF_a) + PF_a
-        PDF = np.array([PF1, PF2, PF3])
+        # PDF = np.array([PF1, PF2, PF3])
         # np.savetxt(sys.stdout, PDF.T("%1.8f", "%1.8f", "%1.8f"))
         return (PF1, PF2, PF3)
 
