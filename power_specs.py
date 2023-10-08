@@ -40,10 +40,11 @@ def rebin(data, xaxis, newx):
     return newdata
 
 
-"""Saves the figure, automatically determining file extension"""
 
 
 def save_figure(path):
+    """Saves the figure, automatically determining file extension"""
+
     bk = matplotlib.backends.backend
     if path == "":
         return
@@ -245,6 +246,30 @@ class power_spec:
             k = flux_power[1:, 0] * scale * 2.0 * math.pi
             PF = flux_power[1:, 1] / scale
             return (k, PF)
+
+
+    def loadpk(self, path, box):
+        """
+        Load a matter power spectrum (Pk).
+
+        Args:
+            path (str): Path to the matter power spectrum data file.
+            box (float): Box size.
+
+        Returns:
+            tuple: K and Pk (matter power) data.
+        """
+        # Load baryon P(k)
+        matter_power = np.loadtxt(self.base + path)
+        scale = self.H0 / box
+        # Adjust Fourier convention.
+        simk = matter_power[1:, 0] * scale * 2.0 * math.pi
+        Pkbar = matter_power[1:, 1] / scale**3
+        # Load DM P(k)
+        matter_power = np.loadtxt(self.base + re.sub("by", "DM", path))
+        PkDM = matter_power[1:, 1] / scale**3
+        Pk = (Pkbar * self.om + PkDM * (self.om - self.om)) / self.om
+        return (simk, Pk)
 
     def plot_z(self, Knot, redshift, title="", ylabel="", legend=True):
         """
@@ -712,6 +737,15 @@ class power_spec:
             mat = np.vstack([pdif**2, pdif]).T
         (derivs, residues, rank, sing) = np.linalg.lstsq(mat, PFdif)
         return derivs
+
+    def Getkbins(self):
+        """
+        Get the kbins to interpolate onto.
+
+        Returns:
+            numpy.ndarray: K-bins.
+        """
+        return self.kbins
 
     def Get_Error_z(
         self, Sim, bstft, box, derivs, params, redshift, qarams=np.empty([])
@@ -1266,7 +1300,7 @@ class flux_pdf(power_spec):
         (k, PF_b) = self.loadpk(dir + self.suf + "snapshot_006" + self.ext, self.box)
         PF3 = (z - 2.8) * 5 * (PF_b - PF_a) + PF_a
         PDF = np.array([PF1, PF2, PF3])
-        np.savetxt(sys.stdout, PDF.T("%1.8f", "%1.8f", "%1.8f"))
+        # np.savetxt(sys.stdout, PDF.T("%1.8f", "%1.8f", "%1.8f"))
         return (PF1, PF2, PF3)
 
 
@@ -1642,4 +1676,4 @@ if __name__ == "__main__":
     #     (bf2zt, bf2bt, bf2ct, bf2dt, T15t, T35t, T45t, bf2at),
     #     bf2t,
     # )
-    g_int = flux_interp(flux, (G_knot))
+    # g_int = flux_interp(flux, (G_knot))
