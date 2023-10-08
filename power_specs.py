@@ -745,9 +745,9 @@ class power_spec:
         Returns:
             numpy.ndarray: K-bins.
         """
-        return None
+        return np.arange(0, 20, 1) + 0.5
         # return self.kbins
-        # Please define kbins function! 
+        # Please define kbins function... Copying this from other funcion for now
 
     def Get_Error_z(
         self, Sim, bstft, box, derivs, params, redshift, qarams=np.empty([])
