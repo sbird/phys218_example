@@ -476,7 +476,7 @@ class flux_pow(power_spec):
          knotpos=np.array([0.07,0.15,0.475, 0.75, 1.19, 1.89,4,25]), om=0.266, H0=0.71,box=60.0,kmax=4.0,
          base="/home/spb41/Lyman-alpha/MinParametricRecon/runs/",bf="best-fit/",suf="flux-power/", ext="_flux_power.txt"):
         power_spec.__init__(self, Snaps,Zz,sdsskbins,knotpos, om, H0,box,base,suf, ext)
-        (k_bf,Pk_bf)= self.loadpk(bf+suf+"snapshot_000"+self.ext,self.bfbox)
+        (k_bf,_)= self.loadpk(bf+suf+"snapshot_000"+self.ext,self.bfbox)
         ind=np.where(k_bf <= kmax)
         self.kbins=k_bf[ind]
     def plot_z(self,Knot,redshift,title="Relative Flux Power",ylabel=r"$\mathrm{P}_\mathrm{F}(k,p)\,/\,\mathrm{P}_\mathrm{F}(k,p_0)$", legend=True):
