@@ -575,7 +575,7 @@ class flux_pdf(power_spec):
     def __init__(self, Snaps=("snapshot_006","snapshot_007","snapshot_008","snapshot_009","snapshot_010","snapshot_011"),
          Zz=np.array([3.0,2.8,2.6,2.4,2.2,2.0]),
          sdsskbins=np.arange(0,20),
-         knotpos=np.array([]), om=0.266,ob=0.0449, H0=0.71,box=48.0,
+         knotpos=np.array([]), om=0.266, H0=0.71,box=48.0,
          base="/home/spb41/Lyman-alpha/MinParametricRecon/runs/",suf="flux-pdf/", ext="_flux_pdf.txt",):
         power_spec.__init__(self, Snaps,Zz,sdsskbins,knotpos, om, H0,box,base,suf,ext)
 
@@ -588,7 +588,7 @@ class flux_pdf(power_spec):
         """ Compare two power spectra directly. Smooths result.
        plot_compare_two(first P(k), second P(k))"""
         (onek,oneP)=self.loadpk(one,onebox)
-        (twok,twoP)=self.loadpk(two,twobox)
+        (_,twoP)=self.loadpk(two,twobox)
         relP=oneP/twoP
         plt.title("Relative flux PDF "+one+" and "+two)
         plt.ylabel(r"$F_2(k)/F_1(k)$")
@@ -642,7 +642,7 @@ class flux_pdf(power_spec):
         #So now we have an array of data values.
         #Pass each k value to flux_deriv in turn.
         for k in np.arange(0,nk):
-            (dPF, d2PF,chi2)=self.flux_deriv(PowerFluxes[:,k]/PFp0[k], pdifs)
+            (dPF, d2PF,_)=self.flux_deriv(PowerFluxes[:,k]/PFp0[k], pdifs)
             results[k]=d2PF
             results[nk+k]=dPF
         return results
@@ -669,7 +669,7 @@ class flux_pdf(power_spec):
         line=np.array([])
         legname=np.array([])
         for sim in Knot.names:
-            (k,Pk)=self.loadpk(sim+self.suf+self.pre+self.GetSnap(redshift)+self.ext,self.box)
+            (_,Pk)=self.loadpk(sim+self.suf+self.pre+self.GetSnap(redshift)+self.ext,self.box)
             line=np.append(line, plt.semilogy(simk,Pk/BFPk,linestyle="-", linewidth=1.5))
             legname=np.append(legname,sim)
         plt.legend(line,legname)
@@ -679,19 +679,19 @@ class flux_pdf(power_spec):
     def GetFlat(self,dirc):
         """Get a power spectrum in the flat format we use"""
        # """for inputting some cosmomc tables"""
-        Pk_sdss=np.empty([11, 12])
+        #Pk_sdss=np.empty([11, 12])
         #For z=2.07 we need to average snap_011 and snap_010
         z=2.07
-        (k,PF_a)=self.loadpk(dirc+self.suf+"snapshot_011"+self.ext, self.box)
-        (k,PF_b)=self.loadpk(dirc+self.suf+"snapshot_010"+self.ext, self.box)
+        (_,PF_a)=self.loadpk(dirc+self.suf+"snapshot_011"+self.ext, self.box)
+        (_,PF_b)=self.loadpk(dirc+self.suf+"snapshot_010"+self.ext, self.box)
         PF1=(z-2.0)*5*(PF_b-PF_a)+PF_a
         z=2.52
-        (k,PF_a)=self.loadpk(dirc+self.suf+"snapshot_009"+self.ext, self.box)
-        (k,PF_b)=self.loadpk(dirc+self.suf+"snapshot_008"+self.ext, self.box)
+        (_,PF_a)=self.loadpk(dirc+self.suf+"snapshot_009"+self.ext, self.box)
+        (_,PF_b)=self.loadpk(dirc+self.suf+"snapshot_008"+self.ext, self.box)
         PF2=(z-2.4)*5*(PF_b-PF_a)+PF_a
         z=2.94
-        (k,PF_a)=self.loadpk(dirc+self.suf+"snapshot_007"+self.ext, self.box)
-        (k,PF_b)=self.loadpk(dirc+self.suf+"snapshot_006"+self.ext, self.box)
+        (_,PF_a)=self.loadpk(dirc+self.suf+"snapshot_007"+self.ext, self.box)
+        (_,PF_b)=self.loadpk(dirc+self.suf+"snapshot_006"+self.ext, self.box)
         PF3=(z-2.8)*5*(PF_b-PF_a)+PF_a
         PDF = np.array([PF1,PF2,PF3])
         np.savetxt(sys.stdout,PDF.T)
