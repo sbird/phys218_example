@@ -221,7 +221,7 @@ class NFWHalo(hm.HaloMassFunction):
             threefac = self.threebodyratio(mass)
             threefac = np.max([threefac, np.ones_like(threefac)],axis=0)
             rate *= threefac
-        return 0.5*(mass/bhmass)/rat
+        return 0.5*(mass/bhmass)/rate
 
     def bias(self,mass):
         """The formula for halo bias in EPS theory (Mo & White 1996), eq. 13"""
@@ -253,7 +253,7 @@ class EinastoHalo(NFWHalo):
         prefac = 4 * math.pi * np.exp(2/alpha)/ alpha *(alpha/2)**(3/alpha)
         return mass / gamma / prefac / (R200 / conc)**3
 
-    def profile(self, rr, mass):
+    def profile(self, radius, mass):
         R200 = self.R200(mass)
         conc = self.concentration(mass)
         Rs = R200/conc
