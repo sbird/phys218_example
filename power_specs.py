@@ -531,8 +531,8 @@ class matter_pow(power_spec):
         self.ob=ob
         self.pre=matpre
 
-    def plot_z(self,Sims,redshift,title="Relative Matter Power",ylabel=r"$\mathrm{P}(k,p)\,/\,\mathrm{P}(k,p_0)$"):
-        power_spec.plot_z(self,Sims,redshift,title,ylabel)
+    def plot_z(self,Knot,redshift,title="Relative Matter Power",ylabel=r"$\mathrm{P}(k,p)\,/\,\mathrm{P}(k,p_0)$",legend=True):
+        power_spec.plot_z(self,Knot,redshift,title,ylabel,legend=True)
 
     
     def loadpk(self, path,box):
@@ -550,7 +550,7 @@ class matter_pow(power_spec):
         return (simk,Pk)
 
     
-    def plot_power(self,path, redshift,camb_filename=""):
+    def plot_power(self,path, redshift,colour=""):
         """ Plot absolute power spectrum, not relative"""
         (k_g, Pk_g)=power_spec.plot_power(self,path,redshift)
         sigma=2.0
@@ -559,8 +559,8 @@ class matter_pow(power_spec):
         sqrt_err=np.array(np.sqrt(samp_err))
         plt.loglog(k_g,Pk_g*(1+sigma*(2.0/sqrt_err+1.0/samp_err)),linestyle="-.",color="black")
         plt.loglog(k_g,Pk_g*(1-sigma*(2.0/sqrt_err+1.0/samp_err)),linestyle="-.",color="black")
-        if camb_filename != "":
-            camb=np.loadtxt(camb_filename)
+        if colour != "":
+            camb=np.loadtxt(colour)
             #Adjust Fourier convention.
             k=camb[:,0]*self.H0
             #NOW THERE IS NO h in the T anywhere.
