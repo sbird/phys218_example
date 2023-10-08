@@ -22,19 +22,17 @@ class DataError(Exception):
         return repr(self.value)
 
 
-""" A where function to find where a floating point value is equal to another"""
-
-
 def wheref(array, value):
+    """A where function to find where a floating point value is equal to another"""
+
     # Floating point inaccuracy.
     eps = 1e-7
     return np.where((array > value - eps) * (array < value + eps))
 
 
-"""Just rebins the data"""
-
-
 def rebin(data, xaxis, newx):
+    """Just rebins the data"""
+
     if newx[0] < xaxis[0] or newx[-1] > xaxis[-1]:
         raise ValueError("A value in newx is beyond the interpolation range")
     intp = scipy.interpolate.InterpolatedUnivariateSpline(np.log(xaxis), data)
@@ -58,10 +56,9 @@ def save_figure(path):
     return plt.savefig(path)
 
 
-"""Little function to adjust a table so it has a different central value"""
-
-
 def corr_table(table, dvecs, table_name):
+    """Little function to adjust a table so it has a different central value"""
+
     new = np.array(table)
     new[12:, :] = table[12:, :] + 2 * table[0:12, :] * dvecs
     pkd = "/home/spb41/cosmomc-src/cosmomc/data/lya-interp/"
@@ -85,10 +82,9 @@ def corr_table(table, dvecs, table_name):
     return new
 
 
-""" A class to be derived from by flux and matter power_spec classes. Stores various helper methods."""
-
-
 class power_spec:
+    """A class to be derived from by flux and matter power_spec classes. Stores various helper methods."""
+
     # Snapshots
     Snaps = ()
     # SDSS redshift bins.
@@ -175,54 +171,95 @@ class power_spec:
         self.ext = ext
         return
 
-    """ Get redshift associated with a snapshot """
-
     def GetZ(self, snap):
+        """
+        Get redshift associated with a snapshot
+
+        Args:
+            snap: The snapshot to retrieve redshift for.
+
+        Returns:
+            float: The redshift associated with the given snapshot.
+        """
         ind = np.where(np.array(self.Snaps) == snap)
         if np.size(ind):
             return self.Zz[ind]
         else:
             raise DataError(str(snap) + " does not exist!")
 
-    """ Get snapshot associated with a redshift """
-
     def GetSnap(self, redshift):
+        """
+        Get snapshot associated with a redshift
+
+        Args:
+            redshift: The redshift value to retrieve the corresponding snapshot for.
+
+        Returns:
+            str: The snapshot associated with the given redshift.
+        """
         ind = wheref(self.Zz, redshift)
         if np.size(ind):
             return str(np.asarray(self.Snaps)[ind][0])
         else:
             raise DataError("No snapshot at redshift " + str(redshift))
 
-    """Get the k bins at a given redshift in h/Mpc units"""
-
     def GetSDSSkbins(self, redshift):
+        """
+        Get the k bins at a given redshift in h/Mpc units
+
+        Args:
+            redshift: The redshift value.
+
+        Returns:
+            numpy.ndarray: The k bins at the specified redshift in h/Mpc units.
+        """
         return self.sdsskbins * self.Hubble(redshift) / (1.0 + redshift)
 
-    # Corr is /sqrt(self.H0)...
-
-    """ Hubble parameter. Hubble(Redshift) """
-
     def Hubble(self, zz):
+        """
+        Hubble parameter. Hubble(Redshift)
+
+        Args:
+            zz: The redshift value.
+
+        Returns:
+            float: The Hubble parameter at the specified redshift.
+        """
         return 100 * self.H0 * math.sqrt(self.om * (1 + zz) ** 3 + (1 - self.om))
 
-    # Conversion factor between s/km and h/Mpc is (1+z)/H(z)
-
-    """ Do correct units conversion to return k and one-d power """
-
     def loaddata(self, file, box):
-        # Adjust Fourier convention.
-        flux_power = np.loadtxt(file)
-        scale = self.H0 / box
-        k = flux_power[1:, 0] * scale * 2.0 * math.pi
-        PF = flux_power[1:, 1] / scale
-        return (k, PF)
+        """
+        Do correct units conversion to return k and one-d power
 
-    """ Plot comparisons between a bunch of sims on one graph
-        plot_z(Redshift, Sims to use ( eg, A1.14).
-        Note this will clear current figures."""
-        
+        Args:
+            file: The file path to load data from.
+            box: The box size.
+
+        Returns:
+            tuple: A tuple containing k and PF (power spectrum).
+        """
+        # Function code goes here
+        if "rebin" in globals():
+            flux_power = np.loadtxt(file)
+            scale = self.H0 / box
+            k = flux_power[1:, 0] * scale * 2.0 * math.pi
+            PF = flux_power[1:, 1] / scale
+            return (k, PF)
 
     def plot_z(self, Knot, redshift, title="", ylabel="", legend=True):
+        """
+        Plot comparisons between a bunch of sims on one graph
+
+        Args:
+            Knot: The Knot object.
+            redshift: The redshift value.
+            title (str): The title for the plot.
+            ylabel (str): The label for the y-axis.
+            legend (bool): Whether to show the legend.
+
+        Returns:
+            matplotlib.figure.Figure: The figure object.
+        """
         # Load best-fit
         (simk, BFPk) = self.loadpk(
             Knot.bstft + self.suf + self.pre + self.GetSnap(redshift) + self.ext,
@@ -235,7 +272,7 @@ class power_spec:
         if title != "":
             plt.title(title + " at z=" + str(redshift))
         plt.ylabel(ylabel)
-        plt.xlabel(r"$k\; (\mathrm{Mpc}^{-1})$")
+        plt.xlabel(r"$k\; (\mathrm{Mpc}^{-1})")
         line = np.array([])
         legname = np.array([])
         for sim in Knot.names:
@@ -257,9 +294,15 @@ class power_spec:
         plt.xlim(simk[0] * 0.8, 10)
         return
 
-    """ Plot a whole suite of snapshots: plot_all(Knot, outdir) """
-
     def plot_all(self, Knot, zzz=np.array([]), out=""):
+        """
+        Plot a whole suite of snapshots
+
+        Args:
+            Knot: The Knot object.
+            zzz (numpy.ndarray): An array of redshift values.
+            out (str): The output directory for saving figures.
+        """
         if np.size(zzz) == 0:
             zzz = self.Zz  # lolz
         for z in zzz:
@@ -268,9 +311,18 @@ class power_spec:
                 save_figure(out + self.figprefix + str(z))
         return
 
-    """ Plot absolute power spectrum, not relative"""
-
     def plot_power(self, path, redshift, colour="black"):
+        """
+        Plot absolute power spectrum, not relative
+
+        Args:
+            path (str): The path to the power spectrum data.
+            redshift: The redshift value.
+            colour (str): The color of the plot line.
+
+        Returns:
+            tuple: A tuple containing k_g (wavenumbers) and Pk_g (power spectrum).
+        """
         (k_g, Pk_g) = self.loadpk(
             path + self.suf + self.pre + self.GetSnap(redshift) + self.ext, self.box
         )
@@ -281,9 +333,15 @@ class power_spec:
         plt.title("Power spectrum at z=" + str(redshift))
         return (k_g, Pk_g)
 
-    """ Plot absolute power for all redshifts """
-
     def plot_power_all(self, Knot, zzz=np.array([]), out=""):
+        """
+        Plot absolute power for all redshifts
+
+        Args:
+            Knot: The Knot object.
+            zzz (numpy.ndarray): An array of redshift values.
+            out (str): The output directory for saving figures.
+        """
         if np.size(zzz) == 0:
             zzz = self.Zz  # lolz
         for z in zzz:
@@ -295,10 +353,20 @@ class power_spec:
                 save_figure(out + self.figprefix + str(z))
         return
 
-    """ Compare two power spectra directly. Smooths result.
-           plot_compare_two(first P(k), second P(k))"""
-
     def plot_compare_two(self, one, onebox, two, twobox, colour=""):
+        """
+        Compare two power spectra directly. Smooths result.
+
+        Args:
+            one (str): Path to the first power spectrum data.
+            onebox: The box size for the first data.
+            two (str): Path to the second power spectrum data.
+            twobox: The box size for the second data.
+            colour (str): The color of the plot line.
+
+        Returns:
+            list: List containing the plot line object.
+        """
         (onek, oneP) = self.loadpk(one, onebox)
         (twok, twoP) = self.loadpk(two, twobox)
         onei = np.where(onek <= twok[-1])
@@ -319,10 +387,18 @@ class power_spec:
         plt.xlim(onek[0] * 0.8, 10)
         return line
 
-    """Get the difference between two simulations on scales probed by
-           the SDSS power spectrum"""
-
     def compare_two(self, one, two, redshift):
+        """
+        Get the difference between two simulations on scales probed by the SDSS power spectrum
+
+        Args:
+            one (str): Path to the first power spectrum data.
+            two (str): Path to the second power spectrum data.
+            redshift: The redshift value.
+
+        Returns:
+            numpy.ndarray: The difference between two simulations on SDSS scales.
+        """
         (onek, oneP) = self.loadpk(one, self.bfbox)
         (twok, twoP) = self.loadpk(two, self.box)
         onei = np.where(onek <= twok[-1])
@@ -336,9 +412,17 @@ class power_spec:
         relP_r[ind] = rebin(relP, onek, sdss[ind])
         return relP_r
 
-    """Do the above 12 times to get a correction table"""
-
     def compare_two_table(self, onedir, twodir):
+        """
+        Do the above 12 times to get a correction table
+
+        Args:
+            onedir (str): The directory for the first set of simulations.
+            twodir (str): The directory for the second set of simulations.
+
+        Returns:
+            numpy.ndarray: The correction table.
+        """
         nk = np.size(self.sdsskbins)
         nz = np.size(self.Zz) - 1
         table = np.empty([nz, nk])
@@ -346,12 +430,6 @@ class power_spec:
             sim = self.pre + self.GetSnap(self.Zz[i]) + self.ext
             table[-1 - i, :] = self.compare_two(onedir + sim, twodir + sim, self.Zz[i])
         return table
-
-    """ Plot a whole redshift range of relative power spectra on the same figure.
-                plot_all(onedir, twodir)
-                Pass onedir and twodir as relative to basedir.
-                ie, for default settings something like
-                best-fit/flux-power/"""
 
     def plot_compare_two_sdss(
         self,
@@ -366,6 +444,24 @@ class power_spec:
         colour="",
         legend=False,
     ):
+        """
+        Plot a whole redshift range of relative power spectra on the same figure.
+
+        Args:
+            onedir (str): The directory for the first set of simulations.
+            twodir (str): The directory for the second set of simulations.
+            zzz (numpy.ndarray): An array of redshift values.
+            out (str): The output directory for saving figures.
+            title (str): The title for the plot.
+            ylabel (str): The label for the y-axis.
+            ymax (float): The maximum value for the y-axis.
+            ymin (float): The minimum value for the y-axis.
+            colour (str): The color of the plot lines.
+            legend (bool): Whether to show the legend.
+
+        Returns:
+            matplotlib.figure.Figure: The figure object.
+        """
         if np.size(zzz) == 0:
             zzz = self.Zz  # lolz
         line = np.array([])
@@ -404,13 +500,6 @@ class power_spec:
             save_figure(out)
         return plt.gcf()
 
-    """ Plot a whole redshift range of relative power spectra on the same figure.
-                plot_all(onedir, twodir)
-                Pass onedir and twodir as relative to basedir.
-                ie, for default settings something like
-                best-fit/flux-power/
-                onedir uses bfbox, twodir uses box"""
-
     def plot_compare_two_all(
         self,
         onedir,
@@ -424,6 +513,24 @@ class power_spec:
         colour="",
         legend=False,
     ):
+        """
+        Plot a whole redshift range of relative power spectra on the same figure.
+
+        Args:
+            onedir (str): The directory for the first set of simulations.
+            twodir (str): The directory for the second set of simulations.
+            zzz (numpy.ndarray): An array of redshift values.
+            out (str): The output directory for saving figures.
+            title (str): The title for the plot.
+            ylabel (str): The label for the y-axis.
+            ymax (float): The maximum value for the y-axis.
+            ymin (float): The minimum value for the y-axis.
+            colour (str): The color of the plot lines.
+            legend (bool): Whether to show the legend.
+
+        Returns:
+            matplotlib.figure.Figure: The figure object.
+        """
         if np.size(zzz) == 0:
             zzz = self.Zz  # lolz
         line = np.array([])
@@ -462,10 +569,17 @@ class power_spec:
             save_figure(out)
         return plt.gcf()
 
-    """Get a power spectrum in the flat format we use"""
-    """for inputting some cosmomc tables"""
-
     def GetFlat(self, dir, si=0.0):
+        """
+        Get a power spectrum in the flat format we use for inputting some cosmomc tables.
+
+        Args:
+            dir (str): The directory for the power spectrum data.
+            si (float, optional): Si parameter. Defaults to 0.0.
+
+        Returns:
+            numpy.ndarray: The flat format power spectrum data.
+        """
         Pk_sdss = np.empty([11, 12])
         # Note this omits the z=2.0 bin
         # SiIII corr now done on the fly in lya_sdss_viel.f90
@@ -501,10 +615,18 @@ class power_spec:
             Pk_sdss[-i - 1, :] = rebin(Pk, k, sdss) * scale * sicorr
         return Pk_sdss
 
-    """ Calculate the flux derivatives for a single redshift
-        Output: (kbins d2P...kbins dP (flat vector of length 2xkbins))"""
-
     def calc_z(self, redshift, s_knot, kbins):
+        """
+        Calculate the flux derivatives for a single redshift.
+
+        Args:
+            redshift (float): The redshift value.
+            s_knot (object): The object containing parameter values.
+            kbins (list or numpy.ndarray): List of k bin values.
+
+        Returns:
+            numpy.ndarray: The calculated flux derivatives.
+        """
         # Array to store answers.
         # Format is: k x (dP, d²P, χ²)
         kbins = np.array(kbins)
@@ -515,7 +637,7 @@ class power_spec:
             results = np.zeros(4 * nk)
         pdifs = s_knot.pvals - s_knot.p0
         qdifs = np.array([])
-        # If we have somethign where the parameter is redshift-dependent, eg, gamma.
+        # If we have something where the parameter is redshift-dependent, eg, gamma.
         if np.size(s_knot.p0) > 1:
             i = wheref(redshift, self.Zz)
             pdifs = s_knot.pvals[:, i] - s_knot.p0[i]
@@ -541,7 +663,7 @@ class power_spec:
         ind = np.where(kbins >= k[0])
         difPF_rebin = np.ones((npvals, np.size(kbins)))
         for i in np.arange(0, npvals):
-            difPF_rebin[i, ind] = rebin(PowerFluxes[i, :] / PFp0, k, kbins[ind])
+            difPF_rebin[i, ind] = rebin(PowerFluxes[i, :] / PFp0, k, kbins[ind])  #
             # Set the things beyond the range of the interpolator
             # equal to the final value.
             if ind[0][0] > 0:
@@ -550,7 +672,7 @@ class power_spec:
         # Pass each k value to flux_deriv in turn.
         for k in np.arange(0, np.size(kbins)):
             # Format of returned data is:
-            # y = ax**2 + bx + cz**2 +dz +e xz
+            # y = ax**2 + bx + cz**2 + dz +e xz
             # derives = (a,b,c,d,e)
             derivs = self.flux_deriv(difPF_rebin[:, k], pdifs, qdifs)
             results[k] = derivs[0]
@@ -560,22 +682,18 @@ class power_spec:
                 results[3 * nk + k] = derivs[3]
         return results
 
-    """ Calculate the flux derivatives for all redshifts
-        Input: Sims to load, parameter values, mean parameter value
-        Output: (2*kbins) x (zbins)"""
-
-    def calc_all(self, s_knot, kbins):
-        flux_derivatives = np.zeros((2 * np.size(kbins), np.size(self.Zz)))
-        if np.size(s_knot.qvals) > 1:
-            flux_derivatives = np.zeros((4 * np.size(kbins), np.size(self.Zz)))
-        # Call flux_deriv_const_z for each redshift.
-        for i in np.arange(0, np.size(self.Zz)):
-            flux_derivatives[:, i] = self.calc_z(self.Zz[i], s_knot, kbins)
-        return flux_derivatives
-
-    """Calculate the flux-derivative for a single redshift and k bin"""
-
     def flux_deriv(self, PFdif, pdif, qdif=np.array([])):
+        """
+        Calculate flux derivatives.
+
+        Args:
+            PFdif (numpy.ndarray): Flux differences.
+            pdif (numpy.ndarray): Parameter differences.
+            qdif (numpy.ndarray, optional): Q parameter differences. Defaults to np.array([]).
+
+        Returns:
+            numpy.ndarray: The calculated flux derivatives.
+        """
         pdif = np.ravel(pdif)
         if np.size(pdif) != np.size(PFdif):
             raise DataError(
@@ -595,11 +713,24 @@ class power_spec:
         (derivs, residues, rank, sing) = np.linalg.lstsq(mat, PFdif)
         return derivs
 
-    """ Get the error on one test simulation at single redshift """
-
     def Get_Error_z(
         self, Sim, bstft, box, derivs, params, redshift, qarams=np.empty([])
     ):
+        """
+        Get the error on one test simulation at single redshift.
+
+        Args:
+            Sim (str): The simulation data directory.
+            bstft (str): The best-fit data directory.
+            box (float): The box size.
+            derivs (object): The object containing flux derivatives.
+            params (numpy.ndarray): Parameter values.
+            redshift (float): The redshift value.
+            qarams (numpy.ndarray, optional): Q parameter values. Defaults to np.empty([]).
+
+        Returns:
+            float: The error value.
+        """
         # Need to load and rebin the sim.
         (k, test) = self.loadpk(Sim + self.suf + self.GetSnap(redshift) + self.ext, box)
         (k, bf) = self.loadpk(bstft + self.suf + self.GetSnap(redshift) + self.ext, box)
@@ -616,10 +747,9 @@ class power_spec:
         return np.array((test2 / guess))[0][0]
 
 
-""" A class written to store the various methods related to calculating of the flux derivatives and plotting of the flux power spectra"""
-
-
 class flux_pow(power_spec):
+    """A class written to store the various methods related to calculating of the flux derivatives and plotting of the flux power spectra"""
+
     figprefix = "/flux-figure"
     kbins = np.array([])
 
@@ -666,6 +796,23 @@ class flux_pow(power_spec):
         suf="flux-power/",
         ext="_flux_power.txt",
     ):
+        """
+        Initialize the flux_pow class.
+
+        Args:
+            Snaps (tuple, optional): Snapshots. Defaults to predefined values.
+            Zz (numpy.ndarray, optional): Redshift values. Defaults to predefined values.
+            sdsskbins (numpy.ndarray, optional): SDSS k-bins. Defaults to predefined values.
+            knotpos (numpy.ndarray, optional): Knot positions. Defaults to predefined values.
+            om (float, optional): Omega_m. Defaults to 0.266.
+            H0 (float, optional): Hubble parameter. Defaults to 0.71.
+            box (float, optional): Box size. Defaults to 60.0.
+            kmax (float, optional): Maximum k value. Defaults to 4.0.
+            base (str, optional): Base directory. Defaults to predefined value.
+            bf (str, optional): Best-fit directory. Defaults to "best-fit/".
+            suf (str, optional): Suffix. Defaults to "flux-power/".
+            ext (str, optional): Extension. Defaults to "_flux_power.txt".
+        """
         power_spec.__init__(
             self, Snaps, Zz, sdsskbins, knotpos, om, H0, box, base, suf, ext
         )
@@ -679,8 +826,17 @@ class flux_pow(power_spec):
         redshift,
         title="Relative Flux Power",
         ylabel=r"$\mathrm{P}_\mathrm{F}(k,p)\,/\,\mathrm{P}_\mathrm{F}(k,p_0)$",
-        legend=True,
-    ):
+        legend=True,):
+        """
+        Plot flux power spectra for a given redshift.
+
+        Args:
+            Sims (tuple or list): Simulation data.
+            redshift (float): Redshift value.
+            title (str, optional): Plot title. Defaults to "Relative Flux Power".
+            ylabel (str, optional): Y-axis label. Defaults to r"$mathrm{P}_mathrm{F}(k,p)/mathrm{P}_mathrm{F}(k,p_0)$".
+            legend (bool, optional): Show legend. Defaults to True.
+        """
         power_spec.plot_z(self, Sims, redshift, title, ylabel, legend)
         if legend:
             kbins = self.GetSDSSkbins(redshift)
@@ -688,14 +844,26 @@ class flux_pow(power_spec):
         plt.ylim(self.ymin, self.ymax)
         plt.xlim(self.kbins[0] * 0.8, 10)
 
-    """Get the kbins to interpolate onto"""
-
     def Getkbins(self):
+        """
+        Get the kbins to interpolate onto.
+
+        Returns:
+            numpy.ndarray: K-bins.
+        """
         return self.kbins
 
-    """Load the SDSS power spectrum"""
-
     def MacDonaldPF(self, sdss, zz):
+        """
+        Load the MacDonald power spectrum.
+
+        Args:
+            sdss (numpy.ndarray): SDSS power spectrum data.
+            zz (float): Redshift.
+
+        Returns:
+            tuple: K and PF (flux power) data.
+        """
         psdss = sdss[np.where(sdss[:, 0] == zz)][:, 1:3]
         fbar = math.exp(-0.0023 * (1 + zz) ** 3.65)
         # multiply by the hubble parameter to be in 1/(km/s)
@@ -704,9 +872,17 @@ class flux_pow(power_spec):
         k = psdss[:, 0] * scale
         return (k, PF)
 
-    """Load a Pk. Different function due to needing to be different for each class"""
-
     def loadpk(self, path, box):
+        """
+        Load a power spectrum (Pk).
+
+        Args:
+            path (str): Path to the power spectrum data file.
+            box (float): Box size.
+
+        Returns:
+            tuple: K and PF (flux power) data.
+        """
         # Adjust Fourier convention.
         flux_power = np.loadtxt(self.base + path)
         scale = self.H0 / box
@@ -715,10 +891,9 @@ class flux_pow(power_spec):
         return (k, PF)
 
 
-""" A class to plot matter power spectra """
-
-
 class matter_pow(power_spec):
+    """A class to plot matter power spectra"""
+
     ob = 0.0
     # For plotting
     ymin = 0.4
@@ -768,6 +943,23 @@ class matter_pow(power_spec):
         ext=".0",
         matpre="PK-by-",
     ):
+        """
+        Initialize the matter_pow class.
+
+        Args:
+            Snaps (tuple, optional): Snapshots. Defaults to predefined values.
+            Zz (numpy.ndarray, optional): Redshift values. Defaults to predefined values.
+            sdsskbins (numpy.ndarray, optional): SDSS k-bins. Defaults to predefined values.
+            knotpos (numpy.ndarray, optional): Knot positions. Defaults to predefined values.
+            om (float, optional): Omega_m. Defaults to 0.266.
+            ob (float, optional): Omega_b. Defaults to 0.0449.
+            H0 (float, optional): Hubble parameter. Defaults to 0.71.
+            box (float, optional): Box size. Defaults to 60.0.
+            base (str, optional): Base directory. Defaults to predefined value.
+            suf (str, optional): Suffix. Defaults to "matter-power/".
+            ext (str, optional): Extension. Defaults to ".0".
+            matpre (str, optional): Prefix for matter power spectra. Defaults to "PK-by-".
+        """
         power_spec.__init__(
             self, Snaps, Zz, sdsskbins, knotpos, om, H0, box, base, suf, ext
         )
@@ -781,11 +973,28 @@ class matter_pow(power_spec):
         title="Relative Matter Power",
         ylabel=r"$\mathrm{P}(k,p)\,/\,\mathrm{P}(k,p_0)$",
     ):
+        """
+        Plot matter power spectra for a given redshift.
+
+        Args:
+            Sims (tuple or list): Simulation data.
+            redshift (float): Redshift value.
+            title (str, optional): Plot title. Defaults to "Relative Matter Power".
+            ylabel (str, optional): Y-axis label. Defaults to r"$mathrm{P}(k,p)/mathrm{P}(k,p_0)$".
+        """
         power_spec.plot_z(self, Sims, redshift, title, ylabel)
 
-    """Load a Pk. Different function due to needing to be different for each class"""
-
     def loadpk(self, path, box):
+        """
+        Load a matter power spectrum (Pk).
+
+        Args:
+            path (str): Path to the matter power spectrum data file.
+            box (float): Box size.
+
+        Returns:
+            tuple: K and Pk (matter power) data.
+        """
         # Load baryon P(k)
         matter_power = np.loadtxt(self.base + path)
         scale = self.H0 / box
@@ -798,9 +1007,18 @@ class matter_pow(power_spec):
         Pk = (Pkbar * self.ob + PkDM * (self.om - self.ob)) / self.om
         return (simk, Pk)
 
-    """ Plot absolute power spectrum, not relative"""
-
     def plot_power(self, path, redshift, camb_filename=""):
+        """
+        Plot absolute matter power spectrum, not relative.
+
+        Args:
+            path (str): Path to the matter power spectrum data file.
+            redshift (float): Redshift value.
+            camb_filename (str, optional): Filename for CAMB matter power spectrum data. Defaults to "".
+
+        Returns:
+            tuple: K and Pk (matter power) data.
+        """
         (k_g, Pk_g) = power_spec.plot_power(self, path, redshift)
         sigma = 2.0
         pkg = np.loadtxt(
@@ -831,10 +1049,9 @@ class matter_pow(power_spec):
         return (k_g, Pk_g)
 
 
-"""The PDF is an instance of the power_spec class. Perhaps poor naming"""
-
-
 class flux_pdf(power_spec):
+    """The PDF is an instance of the power_spec class. Perhaps poor naming"""
+
     def __init__(
         self,
         Snaps=(
@@ -856,30 +1073,74 @@ class flux_pdf(power_spec):
         suf="flux-pdf/",
         ext="_flux_pdf.txt",
     ):
+        """
+        Initialize the flux_pdf class.
+
+        Args:
+            Snaps (tuple, optional): Snapshots. Defaults to predefined values.
+            Zz (numpy.ndarray, optional): Redshift values. Defaults to predefined values.
+            sdsskbins (numpy.ndarray, optional): SDSS k-bins. Defaults to an array ranging from 0 to 19.
+            knotpos (numpy.ndarray, optional): Knot positions. Defaults to an empty array.
+            om (float, optional): Omega_m. Defaults to 0.266.
+            ob (float, optional): Omega_b. Defaults to 0.0449.
+            H0 (float, optional): Hubble parameter. Defaults to 0.71.
+            box (float, optional): Box size. Defaults to 48.0.
+            base (str, optional): Base directory. Defaults to predefined value.
+            suf (str, optional): Suffix. Defaults to "flux-pdf/".
+            ext (str, optional): Extension. Defaults to "_flux_pdf.txt".
+        """
         power_spec.__init__(
             self, Snaps, Zz, sdsskbins, knotpos, om, H0, box, base, suf, ext
         )
 
     def loadpk(self, path, box):
+        """
+        Load a flux power spectrum (Pk).
+
+        Args:
+            path (str): Path to the flux power spectrum data file.
+            box (float): Box size.
+
+        Returns:
+            tuple: K and Pk (flux power) data.
+        """
         flux_pdf = np.loadtxt(self.base + path)
         return (flux_pdf[:, 0], flux_pdf[:, 1])
 
-    """ Compare two power spectra directly. Smooths result.
-           plot_compare_two(first P(k), second P(k))"""
-
     def plot_compare_two(self, one, onebox, two, twobox, colour=""):
+        """
+        Compare two power spectra directly and smooth the result.
+
+        Args:
+            one (str): Path to the first power spectrum data file.
+            onebox (float): Box size for the first power spectrum.
+            two (str): Path to the second power spectrum data file.
+            twobox (float): Box size for the second power spectrum.
+            colour (str, optional): Line color. Defaults to "".
+
+        Returns:
+            array: Line object for the plot.
+        """
         (onek, oneP) = self.loadpk(one, onebox)
         (twok, twoP) = self.loadpk(two, twobox)
         relP = oneP / twoP
         plt.title("Relative flux PDF " + one + " and " + two)
         plt.ylabel(r"$F_2(k)/F_1(k)$")
         plt.xlabel(r"$Flux$")
-        line = plt.semilogy(onek, relP)
+        line = plt.semilogy(onek, relP, color=colour)
         return line
 
-    """ Plot absolute power spectrum, not relative"""
-
     def plot_power(self, path, redshift):
+        """
+        Plot the absolute flux power spectrum, not relative.
+
+        Args:
+            path (str): Path to the flux power spectrum data file.
+            redshift (float): Redshift value.
+
+        Returns:
+            tuple: K and Pk (flux power) data.
+        """
         (k, Pdf) = self.loadpk(
             path + self.suf + self.pre + self.GetSnap(redshift) + self.ext, self.box
         )
@@ -889,24 +1150,23 @@ class flux_pdf(power_spec):
         plt.title("PDF at z=" + str(redshift))
         return (k, Pdf)
 
-    """ Calculate the flux derivatives for a single redshift
-        Output: (kbins d2P...kbins dP (flat vector of length 2x21))"""
-
     def calc_z(self, redshift, s_knot):
+        """
+        Calculate the flux derivatives for a single redshift.
+
+        Args:
+            redshift (float): Redshift value.
+            s_knot: Knot data.
+
+        Returns:
+            array: Array of results.
+        """
         # Array to store answers.
         # Format is: k x (dP, d²P, χ²)
         npvals = np.size(s_knot.pvals)
         nk = 21
         results = np.zeros(2 * nk)
         pdifs = s_knot.pvals - s_knot.p0
-        # This is to rescale by the mean flux, for generating mean flux tables.
-        ###
-        # tau_eff=0.0023*(1+redshift)**3.65
-        # tmin=0.2*((1+redshift)/4.)**2
-        # tmax=0.5*((1+redshift)/4.)**4
-        # teffs=tmin+s_knot.pvals*(tmax-tmin)/30.
-        # pdifs=teffs/tau_eff-1.
-        ###
         ured = np.ceil(redshift * 5) / 5.0
         lred = np.floor(redshift * 5) / 5.0
         usnap = self.GetSnap(ured)
@@ -930,30 +1190,36 @@ class flux_pdf(power_spec):
             )
         PowerFluxes = 5 * ((redshift - lred) * uPower + (ured - redshift) * lPower)
         PFp0 = 5 * ((redshift - lred) * uPFp0 + (ured - redshift) * lPFp0)
-        # So now we have an array of data values.
-        # Pass each k value to flux_deriv in turn.
         for k in np.arange(0, nk):
             (dPF, d2PF, chi2) = self.flux_deriv(PowerFluxes[:, k] / PFp0[k], pdifs)
             results[k] = d2PF
             results[nk + k] = dPF
         return results
 
-    """Get the kbins to interpolate onto"""
-
     def Getkbins(self):
+        """
+        Get the kbins to interpolate onto.
+
+        Returns:
+            numpy.ndarray: K-bins.
+        """
         return np.arange(0, 20, 1) + 0.5
 
-    """ Plot comparisons between a bunch of sims on one graph
-        plot_z(Redshift, Sims to use ( eg, A1.14).
-        Note this will clear current figures."""
-
     def plot_z(self, Knot, redshift, title="", ylabel=""):
+        """
+        Plot comparisons between a bunch of simulations on one graph.
+
+        Args:
+            Knot: Knot data.
+            redshift (float): Redshift value.
+            title (str, optional): Plot title. Defaults to "".
+            ylabel (str, optional): Y-axis label. Defaults to "".
+        """
         # Load best-fit
         (simk, BFPk) = self.loadpk(
             Knot.bstft + self.suf + self.pre + self.GetSnap(redshift) + self.ext,
             self.bfbox,
         )
-        # Setup figure plot.
         ind = wheref(self.Zz, redshift)
         plt.figure(ind[0][0])
         plt.clf()
@@ -976,12 +1242,17 @@ class flux_pdf(power_spec):
         plt.legend(line, legname)
         return
 
-    """Get a power spectrum in the flat format we use"""
-    """for inputting some cosmomc tables"""
-
     def GetFlat(self, dir):
+        """
+        Get a power spectrum in the flat format used for inputting some cosmomc tables.
+
+        Args:
+            dir (str): Directory path.
+
+        Returns:
+            tuple: Flux power spectra data.
+        """
         Pk_sdss = np.empty([11, 12])
-        # For z=2.07 we need to average snap_011 and snap_010
         z = 2.07
         (k, PF_a) = self.loadpk(dir + self.suf + "snapshot_011" + self.ext, self.box)
         (k, PF_b) = self.loadpk(dir + self.suf + "snapshot_010" + self.ext, self.box)
@@ -1362,13 +1633,13 @@ if __name__ == "__main__":
         / 1e3
     )
 
-    G_knot = knot(
-        ("bf2z/", "bf2b/", "bf2c/", "bf2d/", "bf2T15/", "bf2T35/", "bf2T45/", "bf2a/"),
-        (bf2zg, bf2bg, bf2cg, bf2dg, T15g, T35g, T45g, bf2ag),
-        bf2g,
-        "bf2/",
-        60,
-        (bf2zt, bf2bt, bf2ct, bf2dt, T15t, T35t, T45t, bf2at),
-        bf2t,
-    )
+    # G_knot = knot(
+    #     ("bf2z/", "bf2b/", "bf2c/", "bf2d/", "bf2T15/", "bf2T35/", "bf2T45/", "bf2a/"),
+    #     (bf2zg, bf2bg, bf2cg, bf2dg, T15g, T35g, T45g, bf2ag),
+    #     bf2g,
+    #     "bf2/",
+    #     60,
+    #     (bf2zt, bf2bt, bf2ct, bf2dt, T15t, T35t, T45t, bf2at),
+    #     bf2t,
+    # )
     g_int = flux_interp(flux, (G_knot))
