@@ -435,10 +435,8 @@ class power_spec:
             mat=np.vstack([pdif**2, pdif, qdif**2, qdif] ).T
         else:
             mat=np.vstack([pdif**2, pdif] ).T
-        (derivs, residues,rank, sing)=np.linalg.lstsq(mat, PFdif)
+        (derivs, _,_,_)=np.linalg.lstsq(mat, PFdif)
         return derivs
-
-    
     def Get_Error_z(self, Sim, bstft,box, derivs, params, redshift,qarams=np.empty([])):
         #Need to load and rebin the sim.
         """ Get the error on one test simulation at single redshift """
@@ -481,9 +479,8 @@ class flux_pow(power_spec):
         (k_bf,Pk_bf)= self.loadpk(bf+suf+"snapshot_000"+self.ext,self.bfbox)
         ind=np.where(k_bf <= kmax)
         self.kbins=k_bf[ind]
-
-    def plot_z(self,Sims,redshift,title="Relative Flux Power",ylabel=r"$\mathrm{P}_\mathrm{F}(k,p)\,/\,\mathrm{P}_\mathrm{F}(k,p_0)$", legend=True):
-        power_spec.plot_z(self,Sims,redshift,title,ylabel,legend)
+    def plot_z(self,Knot,redshift,title="Relative Flux Power",ylabel=r"$\mathrm{P}_\mathrm{F}(k,p)\,/\,\mathrm{P}_\mathrm{F}(k,p_0)$", legend=True):
+        power_spec.plot_z(self,Knot,redshift,title,ylabel,legend)
         if legend:
             kbins=self.GetSDSSkbins(redshift)
             plt.axvspan(kbins[0], kbins[-1], color="#B0B0B0")
