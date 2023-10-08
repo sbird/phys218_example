@@ -597,7 +597,7 @@ class flux_pdf(power_spec):
         return line
 
    
-    def plot_power(self,path, redshift):
+    def plot_power(self,path, redshift,colour="black"):
         """ Plot absolute power spectrum, not relative"""
         (k,Pdf)=self.loadpk(path+self.suf+self.pre+self.GetSnap(redshift)+self.ext,self.box)
         plt.semilogy(k,Pdf, color="black", linewidth="1.5")
@@ -607,7 +607,7 @@ class flux_pdf(power_spec):
         return(k, Pdf)
 
     
-    def calc_z(self, redshift,s_knot):
+    def calc_z(self, redshift,s_knot,kbins):
         #Array to store answers.
         #Format is: k x (dP, d²P, χ²)
         """ Calculate the flux derivatives for a single redshift
@@ -652,7 +652,7 @@ class flux_pdf(power_spec):
         """Get the kbins to interpolate onto"""
         return np.arange(0,20,1)+0.5
     
-    def plot_z(self,Knot,redshift,title="",ylabel=""):
+    def plot_z(self,Knot,redshift,title="",ylabel="",legend=True):
         """ Plot comparisons between a bunch of sims on one graph
     plot_z(Redshift, Sims to use ( eg, A1.14).
     Note this will clear current figures."""
@@ -676,7 +676,7 @@ class flux_pdf(power_spec):
         return
 
 
-    def GetFlat(self,dirc):
+    def GetFlat(self,dirc, si=0.0):
         """Get a power spectrum in the flat format we use"""
        # """for inputting some cosmomc tables"""
         #Pk_sdss=np.empty([11, 12])
