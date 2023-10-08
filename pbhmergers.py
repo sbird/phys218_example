@@ -42,6 +42,8 @@ class NFWHalo(hm.HaloMassFunction):
 
     def get_nu(self,mass):
         """Get nu, delta_c/sigma"""
+        if self.ureg.get_dimensionality('') == self.ureg.get_dimensionality(mass):
+            mass = mass * self.ureg.Msolar
         return 1.686/self.overden.sigmaof_M_z(mass.to(self.ureg.Msolarh).magnitude)
 
     def concentration(self,mass):
@@ -61,7 +63,7 @@ class NFWHalo(hm.HaloMassFunction):
         hubz2 = (self.overden.omega_matter0/aa**3 + self.overden.omega_lambda0) * hubble**2
         #Critical density at redshift in units of kg m^-3
         rhocrit = 3 * hubz2 / (8*math.pi* self.ureg.newtonian_constant_of_gravitation)
-        print "rhocrit = ", rhocrit
+        print("rhocrit = ", rhocrit)
         return rhocrit.to_base_units()
 
     def R200(self, mass):
@@ -110,10 +112,10 @@ class NFWHalo(hm.HaloMassFunction):
         cutoff = -(7/10)*np.exp(-(vvir**2/sigma**2)) * vvir**(10/7)
         #Piece from the gamma integral: note that mathematica's incomplete gamma function
         #is not quite the same as scipy's: scipy is (Gamma[a] - Gamma[a,z])/Gamma[a]
-        gammaint = sigma**(10/7)*scipy.special.gammainc(5/7,vvir**2/sigma**2)* scipy.special.gamma(5/7)/2
+        gammaint = sigma**(10/7)*scipy.special.gammainc(5/7,vvir.magnitude**2/sigma.magnitude**2)* scipy.special.gamma(5/7)/2
         #We also need to normalise the probability function for v:
         #Integrate[4*Pi*v^2*P[v, sigma, Vvir], {v, 0, Vvir}]
-        probnorm = math.pi**(3/2)*sigma**3*scipy.special.erf(vvir/sigma) - 2*math.pi/3*np.exp(-(vvir**2/sigma**2))*(3*sigma**2*vvir + 2*vvir**3) *0
+        probnorm = math.pi**(3/2)*sigma**3*scipy.special.erf(vvir.magnitude/sigma.magnitude) - 2*math.pi/3*np.exp(-(vvir**2/sigma**2))*(3*sigma**2*vvir + 2*vvir**3) *0
         assert np.all(probnorm.magnitude > 0)
         cross_section = prefac*(gammaint + cutoff)/probnorm
 #         assert self.ureg.get_dimensionality('[length]**3 [time]**(-1) [mass]**(-2)') == self.ureg.get_dimensionality(cross_section)
@@ -158,11 +160,12 @@ class NFWHalo(hm.HaloMassFunction):
         if self.ureg.get_dimensionality('') == self.ureg.get_dimensionality(lowermass):
             lowermass = lowermass * self.ureg.Msolar
         #mass has units M_sun
-        mass = np.logspace(np.log10(lowermass/self.ureg.Msolar),np.log10(uppermass/self.ureg.Msolar),1000)*self.ureg.Msolar
+        mass = np.logspace(np.log10((lowermass/self.ureg.Msolar).magnitude),np.log10((uppermass/self.ureg.Msolar).magnitude),1000)*self.ureg.Msolar
         integrand = self.halomergerratepervolume(mass)
         #trapz needs a wrapper: because we are integrating d log M the units do not change.
         int_units = self.ureg.Gpc**(-3)/self.ureg.year
         trapz = self.ureg.wraps(int_units, int_units)(np.trapz)
+        #!!!!! Missing parameters for trapz
         mergerrate = trapz(integrand,np.log(mass/self.ureg.Msolar))
         return mergerrate.to('Gpc**(-3) year**(-1)')
 
@@ -221,7 +224,7 @@ class NFWHalo(hm.HaloMassFunction):
             threefac = self.threebodyratio(mass)
             threefac = np.max([threefac, np.ones_like(threefac)],axis=0)
             rate *= threefac
-        return 0.5*(mass/bhmass)/rat
+        return 0.5*(mass/bhmass)/rate
 
     def bias(self,mass):
         """The formula for halo bias in EPS theory (Mo & White 1996), eq. 13"""
@@ -261,6 +264,9 @@ class EinastoHalo(NFWHalo):
         rho0 = self.rho0(mass)
         rho = rho0 * np.exp(-2 / alpha * ((rr/Rs)**alpha -1))
         return rho
+
+# ureg=pint.UnitRegistry()
+# ureg.define("Msol = 1.98855*1e30 * kilogram")
 
 def plot_pbh_halo(redshift):
     """Plot the PBH merger rate as a function of halo mass."""
@@ -307,7 +313,7 @@ def plot_pbh_per_mass(redshift):
 
 def plot_concentration_vs_mass(redshift):
     """Plot the concentration as a function of halo mass"""
-    mass = np.logspace(2,16)
+    mass = np.logspace(2,16) 
     hh = NFWHalo(redshift)
     plt.loglog(mass, hh.concentration(mass), ls='-', label="Ludlow concentration")
     hh.conc_model = concentration.PradaConcentration(hh.overden.omega_matter0)
