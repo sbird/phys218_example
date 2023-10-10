@@ -44,6 +44,7 @@ class NFWHalo(hm.HaloMassFunction):
         """Get nu, delta_c/sigma"""
         return 1.686/self.overden.sigmaof_M_z(mass.to(self.ureg.Msolarh).magnitude)
 
+   
     def concentration(self,mass):
         """Compute the concentration for a halo mass in Msun"""
 #         assert self.ureg.get_dimensionality('[mass]') == self.ureg.get_dimensionality(mass)
@@ -113,7 +114,7 @@ class NFWHalo(hm.HaloMassFunction):
         gammaint = sigma**(10/7)*scipy.special.gammainc(5/7,vvir**2/sigma**2)* scipy.special.gamma(5/7)/2
         #We also need to normalise the probability function for v:
         #Integrate[4*Pi*v^2*P[v, sigma, Vvir], {v, 0, Vvir}]
-        probnorm = math.pi**(3/2)*sigma**3*scipy.special.erf(vvir/sigma) - 2*math.pi/3*np.exp(-(vvir**2/sigma**2))*(3*sigma**2*vvir + 2*vvir**3) *0
+        probnorm = math.pi**(3/2)*sigma**3*scipy.special.erf(vvir/sigma) - 2*math.pi/3*np.exp(-(vvir**2/sigma**2))*(3*sigma**2*vvir + 2*vvir**3)
         assert np.all(probnorm.magnitude > 0)
         cross_section = prefac*(gammaint + cutoff)/probnorm
 #         assert self.ureg.get_dimensionality('[length]**3 [time]**(-1) [mass]**(-2)') == self.ureg.get_dimensionality(cross_section)
@@ -259,7 +260,7 @@ class EinastoHalo(NFWHalo):
         Rs = R200/conc
         alpha = 0.18
         rho0 = self.rho0(mass)
-        rho = rho0 * np.exp(-2 / alpha * ((rr/Rs)**alpha -1))
+        rho = rho0 * np.exp(-2 / alpha * ((radius/Rs)**alpha -1))
         return rho
 
 def plot_pbh_halo(redshift):
@@ -307,6 +308,7 @@ def plot_pbh_per_mass(redshift):
 
 def plot_concentration_vs_mass(redshift):
     """Plot the concentration as a function of halo mass"""
+   # Msolar= pint.UnitRegistry.define("Msolar = 1.98855*10**30 * kilogram")
     mass = np.logspace(2,16)
     hh = NFWHalo(redshift)
     plt.loglog(mass, hh.concentration(mass), ls='-', label="Ludlow concentration")
