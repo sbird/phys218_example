@@ -115,7 +115,7 @@ class NFWHalo(hm.HaloMassFunction):
         gammaint = sigma**(10/7)*scipy.special.gammainc(5/7,vvir.magnitude**2/sigma.magnitude**2)* scipy.special.gamma(5/7)/2
         #We also need to normalise the probability function for v:
         #Integrate[4*Pi*v^2*P[v, sigma, Vvir], {v, 0, Vvir}]
-        probnorm = math.pi**(3/2)*sigma**3*scipy.special.erf(vvir.magnitude/sigma.magnitude) - 2*math.pi/3*np.exp(-(vvir**2/sigma**2))*(3*sigma**2*vvir + 2*vvir**3) *0
+        probnorm = math.pi**(3/2)*sigma**3*scipy.special.erf(vvir.magnitude/sigma.magnitude) - 2*math.pi/3*np.exp(-(vvir**2/sigma**2))*(3*sigma**2*vvir + 2*vvir**3) 
         assert np.all(probnorm.magnitude > 0)
         cross_section = prefac*(gammaint + cutoff)/probnorm
 #         assert self.ureg.get_dimensionality('[length]**3 [time]**(-1) [mass]**(-2)') == self.ureg.get_dimensionality(cross_section)
