@@ -42,7 +42,10 @@ class NFWHalo(hm.HaloMassFunction):
 
     def get_nu(self,mass):
         """Get nu, delta_c/sigma"""
-        return 1.686/self.overden.sigmaof_M_z(mass.to(self.ureg.Msolarh).magnitude)
+
+        return 1.686/self.overden.sigmaof_M_z(mass
+                                            #   .to(self.ureg.Msolarh).magnitude
+                                              )
 
     def concentration(self,mass):
         """Compute the concentration for a halo mass in Msun"""
@@ -221,7 +224,7 @@ class NFWHalo(hm.HaloMassFunction):
             threefac = self.threebodyratio(mass)
             threefac = np.max([threefac, np.ones_like(threefac)],axis=0)
             rate *= threefac
-        return 0.5*(mass/bhmass)/rat
+        return 0.5*(mass/bhmass)/rate
 
     def bias(self,mass):
         """The formula for halo bias in EPS theory (Mo & White 1996), eq. 13"""
