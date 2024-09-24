@@ -1,2 +1,2 @@
-# phys218_example
-Example code for PHYS 218
+# PHYS 206 HW1
+Example code for HW1 of Phys 206
