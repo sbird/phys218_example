@@ -46,7 +46,9 @@ class NFWHalo(hm.HaloMassFunction):
 
     def concentration(self,mass):
         """Compute the concentration for a halo mass in Msun"""
-#         assert self.ureg.get_dimensionality('[mass]') == self.ureg.get_dimensionality(mass)
+        if self.ureg.get_dimensionality('') == self.ureg.get_dimensionality(mass):
+            mass = mass * self.ureg.Msolar
+        assert self.ureg.get_dimensionality('[mass]') == self.ureg.get_dimensionality(mass)
         nu = self.get_nu(mass)
         zz = self.overden.redshift
         return self.conc_model.concentration(nu, zz)
@@ -66,7 +68,7 @@ class NFWHalo(hm.HaloMassFunction):
 
     def R200(self, mass):
         """Get the virial radius in Mpc for a given mass in Msun"""
-#         assert self.ureg.get_dimensionality('[mass]') == self.ureg.get_dimensionality(mass)
+        assert self.ureg.get_dimensionality('[mass]') == self.ureg.get_dimensionality(mass)
         rhoc = self.rhocrit()
         #Virial radius R200 in Mpc from the virial mass
         R200 = ((3 * mass / (4* math.pi* 200 * rhoc)).to('Mpc**3'))**(1/3.)
@@ -79,7 +81,7 @@ class NFWHalo(hm.HaloMassFunction):
 
     def virialvel(self, mass):
         """Get the virial velocity in m/s for mass in Msun"""
-#         assert self.ureg.get_dimensionality('[mass]') == self.ureg.get_dimensionality(mass)
+        assert self.ureg.get_dimensionality('[mass]') == self.ureg.get_dimensionality(mass)
         return np.sqrt(2*self.ureg.newtonian_constant_of_gravitation*mass/self.R200(mass)).to_base_units()
 
     def Rmax(self, mass):
@@ -98,7 +100,7 @@ class NFWHalo(hm.HaloMassFunction):
         of the velocity dispersion and a maximum value of the virial velocity.
         Since MPBH drops out, set it to one here.
         Returns cross-section in m^3/s kg^-2"""
-#         assert self.ureg.get_dimensionality('[mass]') == self.ureg.get_dimensionality(mass)
+        assert self.ureg.get_dimensionality('[mass]') == self.ureg.get_dimensionality(mass)
         prefac = ((4*math.pi)**2*(85*math.pi/3)**(2./7)*self.ureg.newtonian_constant_of_gravitation**2/self.ureg.speed_of_light**3).to_base_units()
         sigma = (self.vel_disp(mass)/self.ureg.speed_of_light).to_base_units()
         vvir = (self.virialvel(mass)/self.ureg.speed_of_light).to_base_units()
@@ -110,13 +112,14 @@ class NFWHalo(hm.HaloMassFunction):
         cutoff = -(7/10)*np.exp(-(vvir**2/sigma**2)) * vvir**(10/7)
         #Piece from the gamma integral: note that mathematica's incomplete gamma function
         #is not quite the same as scipy's: scipy is (Gamma[a] - Gamma[a,z])/Gamma[a]
-        gammaint = sigma**(10/7)*scipy.special.gammainc(5/7,vvir**2/sigma**2)* scipy.special.gamma(5/7)/2
+        vbysig = np.array(vvir/sigma)
+        gammaint = sigma**(10/7)*scipy.special.gammainc(5/7,vbysig**2)* scipy.special.gamma(5/7)/2
         #We also need to normalise the probability function for v:
         #Integrate[4*Pi*v^2*P[v, sigma, Vvir], {v, 0, Vvir}]
-        probnorm = math.pi**(3/2)*sigma**3*scipy.special.erf(vvir/sigma) - 2*math.pi/3*np.exp(-(vvir**2/sigma**2))*(3*sigma**2*vvir + 2*vvir**3) *0
+        probnorm = math.pi**(3/2)*sigma**3*scipy.special.erf(vbysig) - 2*math.pi/3*np.exp(-(vvir**2/sigma**2))*(3*sigma**2*vvir + 2*vvir**3) *0
         assert np.all(probnorm.magnitude > 0)
         cross_section = prefac*(gammaint + cutoff)/probnorm
-#         assert self.ureg.get_dimensionality('[length]**3 [time]**(-1) [mass]**(-2)') == self.ureg.get_dimensionality(cross_section)
+        assert self.ureg.get_dimensionality('[length]**3 [time]**(-1) [mass]**(-2)') == self.ureg.get_dimensionality(cross_section)
         return cross_section
 
     def profile(self, radius, mass):
@@ -158,12 +161,12 @@ class NFWHalo(hm.HaloMassFunction):
         if self.ureg.get_dimensionality('') == self.ureg.get_dimensionality(lowermass):
             lowermass = lowermass * self.ureg.Msolar
         #mass has units M_sun
-        mass = np.logspace(np.log10(lowermass/self.ureg.Msolar),np.log10(uppermass/self.ureg.Msolar),1000)*self.ureg.Msolar
+        mass = np.logspace(np.array(np.log10(lowermass/self.ureg.Msolar)),np.array(np.log10(uppermass/self.ureg.Msolar)),1000)*self.ureg.Msolar
         integrand = self.halomergerratepervolume(mass)
         #trapz needs a wrapper: because we are integrating d log M the units do not change.
         int_units = self.ureg.Gpc**(-3)/self.ureg.year
-        trapz = self.ureg.wraps(int_units, int_units)(np.trapz)
-        mergerrate = trapz(integrand,np.log(mass/self.ureg.Msolar))
+        # trapz = self.ureg.wraps(int_units, int_units)(np.trapz)
+        mergerrate = np.trapz(integrand.magnitude,np.log(mass/self.ureg.Msolar).magnitude)*int_units
         return mergerrate.to('Gpc**(-3) year**(-1)')
 
     def mergerfraction(self, vvir, time=None, bhmass = None):
