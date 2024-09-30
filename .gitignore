@@ -102,3 +102,7 @@ venv.bak/
 
 # mypy
 .mypy_cache/
+.DS_Store
+concentration.pdf
+halomergerrate.pdf
+volumemergerrate.pdf
