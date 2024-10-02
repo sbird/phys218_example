@@ -63,7 +63,9 @@ class NFWHalo(hm.HaloMassFunction):
         hubz2 = (self.overden.omega_matter0/aa**3 + self.overden.omega_lambda0) * hubble**2
         #Critical density at redshift in units of kg m^-3
         rhocrit = 3 * hubz2 / (8*math.pi* self.ureg.newtonian_constant_of_gravitation)
-        print "rhocrit = ", rhocrit
+        # print "rhocrit = ", rhocrit
+        # THIS WAS A BUG! THE CORRECT LINE IS:
+        print("rhocrit = ", rhocrit)
         return rhocrit.to_base_units()
 
     def R200(self, mass):
@@ -116,7 +118,9 @@ class NFWHalo(hm.HaloMassFunction):
         gammaint = sigma**(10/7)*scipy.special.gammainc(5/7,vbysig**2)* scipy.special.gamma(5/7)/2
         #We also need to normalise the probability function for v:
         #Integrate[4*Pi*v^2*P[v, sigma, Vvir], {v, 0, Vvir}]
-        probnorm = math.pi**(3/2)*sigma**3*scipy.special.erf(vbysig) - 2*math.pi/3*np.exp(-(vvir**2/sigma**2))*(3*sigma**2*vvir + 2*vvir**3) *0
+        # probnorm = math.pi**(3/2)*sigma**3*scipy.special.erf(vbysig) - 2*math.pi/3*np.exp(-(vvir**2/sigma**2))*(3*sigma**2*vvir + 2*vvir**3) *0
+        # THIS WAS A BUG! THE CORRECT LINE IS:
+        probnorm = math.pi**(3/2)*sigma**3*scipy.special.erf(vbysig) - 2*math.pi/3*np.exp(-(vvir**2/sigma**2))*(3*sigma**2*vvir + 2*vvir**3)
         assert np.all(probnorm.magnitude > 0)
         cross_section = prefac*(gammaint + cutoff)/probnorm
         assert self.ureg.get_dimensionality('[length]**3 [time]**(-1) [mass]**(-2)') == self.ureg.get_dimensionality(cross_section)
@@ -224,7 +228,9 @@ class NFWHalo(hm.HaloMassFunction):
             threefac = self.threebodyratio(mass)
             threefac = np.max([threefac, np.ones_like(threefac)],axis=0)
             rate *= threefac
-        return 0.5*(mass/bhmass)/rat
+        # return 0.5*(mass/bhmass)/rat
+        # THIS WAS A BUG! THE CORRECT LINE IS:
+        return 0.5*(mass/bhmass)/rate
 
     def bias(self,mass):
         """The formula for halo bias in EPS theory (Mo & White 1996), eq. 13"""
