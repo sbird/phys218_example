@@ -63,8 +63,11 @@ class NFWHalo(hm.HaloMassFunction):
         hubz2 = (self.overden.omega_matter0/aa**3 + self.overden.omega_lambda0) * hubble**2
         #Critical density at redshift in units of kg m^-3
         rhocrit = 3 * hubz2 / (8*math.pi* self.ureg.newtonian_constant_of_gravitation)
-        print "rhocrit = ", rhocrit
-        return rhocrit.to_base_units()
+        print(rhocrit = ", rhocrit")
+       
+    #this is the first error*****
+    
+    return rhocrit.to_base_units()
 
     def R200(self, mass):
         """Get the virial radius in Mpc for a given mass in Msun"""
@@ -224,7 +227,9 @@ class NFWHalo(hm.HaloMassFunction):
             threefac = self.threebodyratio(mass)
             threefac = np.max([threefac, np.ones_like(threefac)],axis=0)
             rate *= threefac
-        return 0.5*(mass/bhmass)/rat
+        return 0.5*(mass/bhmass)/rate
+ #I think this is the sec error, rat=rate********
+
 
     def bias(self,mass):
         """The formula for halo bias in EPS theory (Mo & White 1996), eq. 13"""
