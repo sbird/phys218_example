@@ -63,7 +63,8 @@ class NFWHalo(hm.HaloMassFunction):
         hubz2 = (self.overden.omega_matter0/aa**3 + self.overden.omega_lambda0) * hubble**2
         #Critical density at redshift in units of kg m^-3
         rhocrit = 3 * hubz2 / (8*math.pi* self.ureg.newtonian_constant_of_gravitation)
-        print "rhocrit = ", rhocrit
+        ### the first bug with the print
+        print ("rhocrit = ", rhocrit)
         return rhocrit.to_base_units()
 
     def R200(self, mass):
@@ -224,7 +225,8 @@ class NFWHalo(hm.HaloMassFunction):
             threefac = self.threebodyratio(mass)
             threefac = np.max([threefac, np.ones_like(threefac)],axis=0)
             rate *= threefac
-        return 0.5*(mass/bhmass)/rat
+        ###bug 2: there is a typo of rate & rat??
+        return 0.5*(mass/bhmass)/rate
 
     def bias(self,mass):
         """The formula for halo bias in EPS theory (Mo & White 1996), eq. 13"""
@@ -268,7 +270,8 @@ class EinastoHalo(NFWHalo):
 def plot_pbh_halo(redshift):
     """Plot the PBH merger rate as a function of halo mass."""
     mass = np.logspace(2,15)
-    hh = NFWHalo(redshift)
+    ### maybe it is bug 3: have to specify the conc_model of the list NFWhalo
+    hh = NFWHalo(redshift,conc_model="ludlow")
     hh.conc_model = concentration.LudlowConcentration(hh.overden.Dofz)
     pbhrate = hh.pbhpbhrate(mass)
     hh.conc_model = concentration.PradaConcentration(hh.overden.omega_matter0)
@@ -311,6 +314,7 @@ def plot_pbh_per_mass(redshift):
 def plot_concentration_vs_mass(redshift):
     """Plot the concentration as a function of halo mass"""
     mass = np.logspace(2,16)
+   ### maybe it is bug 3: have to specify the conc_model of the list NFWhalo
     hh = NFWHalo(redshift)
     plt.loglog(mass, hh.concentration(mass), ls='-', label="Ludlow concentration")
     hh.conc_model = concentration.PradaConcentration(hh.overden.omega_matter0)
