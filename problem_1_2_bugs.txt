@@ -1,0 +1,9 @@
+The first error is located in this line:
+print "rhocrit = ", rhocrit
+The function print requires () around the argument
+
+
+The second error is in this line:
+return 0.5*(mass/bhmass)/rat
+Name 'rat' is not defined. It might have been intended to be 'rate' but misspelled.
+

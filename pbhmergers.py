@@ -9,9 +9,6 @@ import pint
 import concentration
 import halo_mass_function as hm
 
-ureg = pint.UnitRegistry()
-ureg.define('hubble = 70 * kilometer / second / megaparsec')
-
 #This is a global so that the decorator checking works.
 ureg_chk=pint.UnitRegistry()
 
@@ -28,9 +25,9 @@ class NFWHalo(hm.HaloMassFunction):
         #Hubble constant and related objects!
         #The try except is because the method names change between pint 0.6 and pint 0.8
         try:
-            #I guess this line is the third error, the syntax for using attributions of pint is not correct
-            #self.ureg.define(pint.unit.UnitDefinition('hub', '', (),pint.unit.ScaleConverter(hubble)))
-            self.ureg.define('hub = 1 * hubble')
+            self.ureg = pint.UnitRegistry()
+            self.ureg.define(pint.unit.UnitDefinition('hub', '', (), pint.unit.ScaleConverter(hubble, 0)))
+            
         except AttributeError:
             self.ureg.define(pint.definitions.UnitDefinition('hub', '', (),pint.converters.ScaleConverter(hubble)))
         self.ureg.define("Msolarh = Msolar / hub")
@@ -68,10 +65,9 @@ class NFWHalo(hm.HaloMassFunction):
         hubz2 = (self.overden.omega_matter0/aa**3 + self.overden.omega_lambda0) * hubble**2
         #Critical density at redshift in units of kg m^-3
         rhocrit = 3 * hubz2 / (8*math.pi* self.ureg.newtonian_constant_of_gravitation)
-
-        #this is the first error, the print does not have () around the arguments
+        #This is the first error. Print needs () around the argument.
         #print "rhocrit = ", rhocrit
-        print("rhocrit = ", rhocrit)
+        print ("rhocrit = ", rhocrit)
         return rhocrit.to_base_units()
 
     def R200(self, mass):
@@ -232,9 +228,9 @@ class NFWHalo(hm.HaloMassFunction):
             threefac = self.threebodyratio(mass)
             threefac = np.max([threefac, np.ones_like(threefac)],axis=0)
             rate *= threefac
-        #this is the second error, name 'rat' is not defined    
+        #This is the second error. 'rat' is not defined. It might have been 'rate'.    
         #return 0.5*(mass/bhmass)/rat
-        return 0.5*(mass/bhmass)/rate    
+        return 0.5*(mass/bhmass)/rate
 
     def bias(self,mass):
         """The formula for halo bias in EPS theory (Mo & White 1996), eq. 13"""
