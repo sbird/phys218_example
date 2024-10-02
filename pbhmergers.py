@@ -23,13 +23,11 @@ class NFWHalo(hm.HaloMassFunction):
         self.ureg.define("Msolar = 1.98855*10**30 * kilogram")
         #Mpc newton's constant and light speed are already defined.
         #Hubble constant and related objects!
-        #The try except is because the method names change between pint 0.6 and pint 0.8
         try:
-            self.ureg = pint.UnitRegistry()
-            self.ureg.define(pint.unit.UnitDefinition('hub', '', (), pint.unit.ScaleConverter(hubble, 0)))
-            
-        except AttributeError:
             self.ureg.define(pint.definitions.UnitDefinition('hub', '', (),pint.converters.ScaleConverter(hubble)))
+        #Modern versions of pint > 0.19
+        except AttributeError:
+            self.ureg.define('hub = %g' % hubble)
         self.ureg.define("Msolarh = Msolar / hub")
         self.ureg.define("Mpch = Mpc / hub")
         #Factor of R_s at which the maximum circular velocity of the halo is reached.
@@ -65,9 +63,7 @@ class NFWHalo(hm.HaloMassFunction):
         hubz2 = (self.overden.omega_matter0/aa**3 + self.overden.omega_lambda0) * hubble**2
         #Critical density at redshift in units of kg m^-3
         rhocrit = 3 * hubz2 / (8*math.pi* self.ureg.newtonian_constant_of_gravitation)
-        #This is the first error. Print needs () around the argument.
-        #print "rhocrit = ", rhocrit
-        print ("rhocrit = ", rhocrit)
+        print "rhocrit = ", rhocrit
         return rhocrit.to_base_units()
 
     def R200(self, mass):
@@ -228,9 +224,7 @@ class NFWHalo(hm.HaloMassFunction):
             threefac = self.threebodyratio(mass)
             threefac = np.max([threefac, np.ones_like(threefac)],axis=0)
             rate *= threefac
-        #This is the second error. 'rat' is not defined. It might have been 'rate'.    
-        #return 0.5*(mass/bhmass)/rat
-        return 0.5*(mass/bhmass)/rate
+        return 0.5*(mass/bhmass)/rat
 
     def bias(self,mass):
         """The formula for halo bias in EPS theory (Mo & White 1996), eq. 13"""
