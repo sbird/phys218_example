@@ -1,0 +1,53 @@
+The first two errors are found with "ruff".
+The first error is located in this line:
+print "rhocrit = ", rhocrit
+The function print requires () around the argument
+
+
+The second error is in this line:
+return 0.5*(mass/bhmass)/rat
+Name 'rat' is not defined. It might have been intended to be 'rate' but misspelled.
+
+Since I could not find anything else with ruff, I tried installing pylint. And this is the result:
+pbhmergers.py:1:0: C0301: Line too long (137/100) (line-too-long)
+pbhmergers.py:27:0: C0301: Line too long (115/100) (line-too-long)
+pbhmergers.py:87:0: C0301: Line too long (106/100) (line-too-long)
+pbhmergers.py:94:0: C0301: Line too long (117/100) (line-too-long)
+pbhmergers.py:96:0: C0301: Line too long (102/100) (line-too-long)
+pbhmergers.py:101:0: C0301: Line too long (104/100) (line-too-long)
+pbhmergers.py:106:0: C0301: Line too long (147/100) (line-too-long)
+pbhmergers.py:121:0: C0301: Line too long (143/100) (line-too-long)
+pbhmergers.py:124:0: C0301: Line too long (131/100) (line-too-long)
+pbhmergers.py:137:0: C0301: Line too long (124/100) (line-too-long)
+pbhmergers.py:166:0: C0301: Line too long (143/100) (line-too-long)
+pbhmergers.py:183:0: C0301: Line too long (109/100) (line-too-long)
+pbhmergers.py:187:0: C0301: Line too long (129/100) (line-too-long)
+pbhmergers.py:229:92: C0303: Trailing whitespace (trailing-whitespace)
+pbhmergers.py:236:0: C0325: Unnecessary parens after '=' keyword (superfluous-parens)
+pbhmergers.py:242:0: C0301: Line too long (126/100) (line-too-long)
+pbhmergers.py:250:0: C0301: Line too long (165/100) (line-too-long)
+pbhmergers.py:259:0: C0301: Line too long (101/100) (line-too-long)
+pbhmergers.py:336:0: C0301: Line too long (143/100) (line-too-long)
+pbhmergers.py:339:0: C0301: Line too long (109/100) (line-too-long)
+pbhmergers.py:341:0: C0301: Line too long (101/100) (line-too-long)
+pbhmergers.py:409:0: C0304: Final newline missing (missing-final-newline)
+pbhmergers.py:7:0: C0413: Import "import matplotlib.pyplot as plt" should be placed at the top of the module (wrong-import-position)
+pbhmergers.py:8:0: C0413: Import "import pint" should be placed at the top of the module (wrong-import-position)
+pbhmergers.py:9:0: C0413: Import "import concentration" should be placed at the top of the module (wrong-import-position)
+pbhmergers.py:10:0: C0413: Import "import halo_mass_function as hm" should be placed at the top of the module (wrong-import-position)
+pbhmergers.py:30:29: C0209: Formatting a regular string which could be an f-string (consider-using-f-string)
+pbhmergers.py:71:4: C0103: Method name "R200" doesn't conform to snake_case naming style (invalid-name)
+pbhmergers.py:76:8: C0103: Variable name "R200" doesn't conform to snake_case naming style (invalid-name)
+pbhmergers.py:79:4: C0103: Method name "Rs" doesn't conform to snake_case naming style (invalid-name)
+pbhmergers.py:89:4: C0103: Method name "Rmax" doesn't conform to snake_case naming style (invalid-name)
+pbhmergers.py:118:33: E1101: Module 'scipy.special' has no 'gammainc' member (no-member)
+pbhmergers.py:121:43: E1101: Module 'scipy.special' has no 'erf' member (no-member)
+pbhmergers.py:130:8: C0103: Variable name "R_s" doesn't conform to snake_case naming style (invalid-name)
+pbhmergers.py:143:8: C0103: Variable name "Rs" doesn't conform to snake_case naming style (invalid-name)
+pbhmergers.py:209:8: C0103: Variable name "Rs" doesn't conform to snake_case naming style (invalid-name)
+pbhmergers.py:250:80: E1101: Module 'scipy.special' has no 'gammainc' member (no-member)
+pbhmergers.py:257:8: C0103: Variable name "R200" doesn't conform to snake_case naming style (invalid-name)
+pbhmergers.py:259:16: E1101: Module 'scipy.special' has no 'gammainc' member (no-member)
+pbhmergers.py:263:4: W0237: Parameter 'radius' has been renamed to 'rr' in overriding 'EinastoHalo.profile' method (arguments-renamed)
+pbhmergers.py:264:8: C0103: Variable name "R200" doesn't conform to snake_case naming style (invalid-name)
+pbhmergers.py:266:8: C0103: Variable name "Rs" doesn't conform to snake_case naming style (invalid-name)
