@@ -63,7 +63,7 @@ class NFWHalo(hm.HaloMassFunction):
         hubz2 = (self.overden.omega_matter0/aa**3 + self.overden.omega_lambda0) * hubble**2
         #Critical density at redshift in units of kg m^-3
         rhocrit = 3 * hubz2 / (8*math.pi* self.ureg.newtonian_constant_of_gravitation)
-        print "rhocrit = ", rhocrit
+        print("rhocrit = ", rhocrit) # Bug #1
         return rhocrit.to_base_units()
 
     def R200(self, mass):
@@ -224,7 +224,7 @@ class NFWHalo(hm.HaloMassFunction):
             threefac = self.threebodyratio(mass)
             threefac = np.max([threefac, np.ones_like(threefac)],axis=0)
             rate *= threefac
-        return 0.5*(mass/bhmass)/rat
+        return 0.5*(mass/bhmass) # Bug #2
 
     def bias(self,mass):
         """The formula for halo bias in EPS theory (Mo & White 1996), eq. 13"""
@@ -313,7 +313,7 @@ def plot_concentration_vs_mass(redshift):
     mass = np.logspace(2,16)
     hh = NFWHalo(redshift)
     plt.loglog(mass, hh.concentration(mass), ls='-', label="Ludlow concentration")
-    hh.conc_model = concentration.PradaConcentration(hh.overden.omega_matter0)
+    hh.conc_model = concentration.LudlowConcentration(hh.overden.Dofz) # Bug #3 (?)
     plt.loglog(mass, hh.concentration(mass), ls='--', label="Prada concentration")
     plt.xlim(500,1e16)
     plt.xticks(np.logspace(3,15,5))

@@ -230,7 +230,7 @@ class Overdensities(object):
            parameter from 0 to infinity.
            Note that R is in h^-1 Mpc (comoving)
         """
-        result = integ.quad(self.sigma_squared_integrand,0,np.Inf, args=(R,),epsrel=1e-2)[0]
+        result = integ.quad(self.sigma_squared_integrand,0,np.inf, args=(R,),epsrel=1e-2)[0]
         return result / (2.0 * math.pi**2)
 
     def sigma_squared_of_R(self, R):
@@ -258,7 +258,7 @@ class Overdensities(object):
         """For the halo mass function we also need M * d log sigma/dM.
         This routine computes a table of that quantity.
         We use d log sigma /dM = 1/(2 sigma^2) dR /dM int(k^2 P(k) d/dR(W^2 (kR) dk"""
-        result = integ.quad(self.dlogsigma_integrand,0,np.Inf, args=(R,),epsrel=1e-2)[0]
+        result = integ.quad(self.dlogsigma_integrand,0,np.inf, args=(R,),epsrel=1e-2)[0]
         return result / (2.0 * math.pi**2) * R / (self.sigma_squared_of_R(R) * 3.) - self.use_pbh*self.sigma_square_poisson(R) / (2*self.sigma_squared_of_R(R))
 
     def dlogsigma_integrand(self,k,R):
